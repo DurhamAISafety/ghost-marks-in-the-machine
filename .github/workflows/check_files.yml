@@ -1,0 +1,48 @@
+name: Check for GenAI code
+
+# Run the GitHub workflow when
+on:
+  # Any push to any branch
+  push:
+  # Any pull request targeting main
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  check-files:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Assume people won't make more than 50 commits before pushing
+          fetch-depth: 50 
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Add any dependencies your test function needs:
+          # pip install -r requirements.txt
+      
+      - name: Get changed files
+        id: changed-files
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            # For PRs, compare against the base branch
+            FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)
+          else
+            # For pushes, compare against the previous commit
+            FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.before }} ${{ github.sha }} | xargs)
+          fi
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+      
+      - name: Run test on changed files
+        run: |
+          python run_checks.py ${{ steps.changed-files.outputs.files }}
