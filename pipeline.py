@@ -1,3 +1,5 @@
+# DO NOT RUN ON LOCAL w/o memory
+
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, SynthIDTextWatermarkingConfig
 from transformers import SynthIDTextWatermarkLogitsProcessor
@@ -197,8 +199,6 @@ def main():
             except Exception as e:
                 print(f"Generation failed: {e}")
                 final_result = {
-                    "problem_id": sample['problem_id'],
-                    "prompt": prompt,
                     "ngram_len": str(n),
                     "g_score": 0.0,
                     "status": "Generation Error",
@@ -220,8 +220,6 @@ def main():
                 print(f"    Error: {output}")
             
             final_result = {
-                "problem_id": sample['problem_id'],
-                "prompt": prompt,
                 "ngram_len": str(n),
                 "g_score": score,
                 "status": status,
@@ -237,10 +235,95 @@ def main():
         if final_result:
             results.append(final_result)
         
-    df = pd.DataFrame(results)
-    df.to_csv(OUTPUT_FILE, index=False)
-    print(f"\nResults saved to {OUTPUT_FILE}")
-    print(df)
+    # Structure for JSON: List of problems
+    # Since we only run one problem here, it's a list with one element
+    problem_data = {
+        "problem_id": sample['problem_id'],
+        "prompt": prompt,
+        "results": results
+    }
+    
+    # Save to JSON
+    output_json = "results.json"
+    with open(output_json, "w") as f:
+        json.dump([problem_data], f, indent=2)
+    print(f"\nResults saved to {output_json}")
+    
+    # Generate HTML Report
+    generate_html_report([problem_data], "report.html")
+    print(f"Report saved to report.html")
+
+def generate_html_report(data, filename):
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>SynthID Evaluation Report</title>
+        <style>
+            body { font-family: sans-serif; margin: 20px; }
+            .problem { border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 5px; }
+            .prompt { background-color: #f5f5f5; padding: 10px; white-space: pre-wrap; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; }
+            table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+            th { background-color: #f2f2f2; }
+            .passed { color: green; font-weight: bold; }
+            .failed { color: red; }
+            pre { white-space: pre-wrap; margin: 0; max-height: 300px; overflow-y: auto; background: #f8f8f8; padding: 5px; }
+        </style>
+    </head>
+    <body>
+        <h1>SynthID Evaluation Report</h1>
+    """
+    
+    for prob in data:
+        html += f"""
+        <div class="problem">
+            <h2>Problem ID: {prob['problem_id']}</h2>
+            <details>
+                <summary><strong>Prompt (Click to expand)</strong></summary>
+                <div class="prompt">{prob['prompt']}</div>
+            </details>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>N-gram</th>
+                        <th>Attempts</th>
+                        <th>Status</th>
+                        <th>G-Score</th>
+                        <th>Output/Error</th>
+                        <th>Generated Code</th>
+                    </tr>
+                </thead>
+                <tbody>
+        """
+        
+        for res in prob['results']:
+            status_class = "passed" if res['status'] == "Passed" else "failed"
+            html += f"""
+                    <tr>
+                        <td>{res['ngram_len']}</td>
+                        <td>{res['attempts']}</td>
+                        <td class="{status_class}">{res['status']}</td>
+                        <td>{res['g_score']:.4f}</td>
+                        <td><pre>{res['output']}</pre></td>
+                        <td><pre>{res['generated_code']}</pre></td>
+                    </tr>
+            """
+            
+        html += """
+                </tbody>
+            </table>
+        </div>
+        """
+        
+    html += """
+    </body>
+    </html>
+    """
+    
+    with open(filename, "w") as f:
+        f.write(html)
 
 if __name__ == "__main__":
     try:
