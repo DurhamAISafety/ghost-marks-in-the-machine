@@ -1,0 +1,209 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>SynthID Evaluation Report</title>
+        <style>
+            body { font-family: sans-serif; margin: 20px; }
+            .problem { border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 5px; }
+            .prompt { background-color: #f5f5f5; padding: 10px; white-space: pre-wrap; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; }
+            table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+            th { background-color: #f2f2f2; }
+            .passed { color: green; font-weight: bold; }
+            .failed { color: red; }
+            pre { white-space: pre-wrap; margin: 0; max-height: 300px; overflow-y: auto; background: #f8f8f8; padding: 5px; }
+        </style>
+    </head>
+    <body>
+        <h1>SynthID Evaluation Report</h1>
+    
+        <div class="problem">
+            <h2>Problem ID: 0</h2>
+            <details>
+                <summary><strong>Prompt (Click to expand)</strong></summary>
+                <div class="prompt">An accordion is a string (yes, in the real world accordions are musical instruments, but let's forget about it for a while) which can be represented as a concatenation of: an opening bracket (ASCII code $091$), a colon (ASCII code $058$), some (possibly zero) vertical line characters (ASCII code $124$), another colon, and a closing bracket (ASCII code $093$). The length of the accordion is the number of characters in it.
+
+For example, [::], [:||:] and [:|||:] are accordions having length $4$, $6$ and $7$. (:|:), {:||:}, [:], ]:||:[ are not accordions. 
+
+You are given a string $s$. You want to transform it into an accordion by removing some (possibly zero) characters from it. Note that you may not insert new characters or reorder existing ones. Is it possible to obtain an accordion by removing characters from $s$, and if so, what is the maximum possible length of the result?
+
+
+-----Input-----
+
+The only line contains one string $s$ ($1 \le |s| \le 500000$). It consists of lowercase Latin letters and characters [, ], : and |.
+
+
+-----Output-----
+
+If it is not possible to obtain an accordion by removing some characters from $s$, print $-1$. Otherwise print maximum possible length of the resulting accordion.
+
+
+-----Examples-----
+Input
+|[a:b:|]
+
+Output
+4
+
+Input
+|]:[|:]
+
+Output
+-1</div>
+            </details>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>N-gram</th>
+                        <th>Attempts</th>
+                        <th>Status</th>
+                        <th>G-Score</th>
+                        <th>Output/Error</th>
+                        <th>Generated Code</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>None</td>
+                        <td>1</td>
+                        <td class="passed">Passed</td>
+                        <td>0.5011</td>
+                        <td><pre></pre></td>
+                        <td><pre># -*- coding: utf-8 -*-
+
+import time
+
+
+def main():
+    s = input()
+    # Your code here
+    if _check(s):
+        print(len(s))
+    else:
+        print(-1)
+
+
+def _check(s):
+    """
+    :type s: str
+    :rtype: bool
+    """
+    if s[0] == ":" or s[-1] == ":":
+        return False
+    brackets = [":", "|"]
+    stack = []
+    for c in s:
+        if c not in brackets:
+            stack.append(c)
+        else:
+            if len(stack) < 1:
+                return False
+            if stack[-1] == brackets[0] and c == brackets[1]:
+                stack.pop()
+                continue
+            if stack[-1] == brackets[1] and c == brackets[0]:
+                stack.pop()
+                continue
+            return False
+    if len(stack) < 1:
+        return False
+    return True
+
+if __name__ == '__main__':
+    start_time = time.time()
+    main()
+    print("--- %s seconds ---" % (time.time() - start_time))</pre></td>
+                    </tr>
+            
+                    <tr>
+                        <td>2</td>
+                        <td>3</td>
+                        <td class="passed">Passed</td>
+                        <td>0.5354</td>
+                        <td><pre>|[a:b:|
+7
+-1
+</pre></td>
+                        <td><pre>while True:
+    s = input('> ')
+    
+    s = s.lstrip('[').rstrip(']')
+    if not s:
+        print(-1)
+        break
+    
+    l = 0
+    for i, c in enumerate(s):
+        if c == ':':
+            l += 1
+            if s[i:].rfind(':') > i:
+                continue
+            else:
+                s = s[:i] + ':'*l + s[i+1:]
+                break
+    
+    print(s)
+    print(len(s))</pre></td>
+                    </tr>
+            
+                    <tr>
+                        <td>5</td>
+                        <td>3</td>
+                        <td class="passed">Passed</td>
+                        <td>0.5604</td>
+                        <td><pre>-1
+</pre></td>
+                        <td><pre>s = input().strip()
+acc = '[::]'
+
+for i in range(100000):
+    if len(s) < acc.count(':')+1:
+        print(-1)
+        break
+    acc = '[' + acc[1:] + '::]'
+    s = s.replace(acc, '')
+
+else:
+    print(len(s))</pre></td>
+                    </tr>
+            
+                    <tr>
+                        <td>10</td>
+                        <td>5</td>
+                        <td class="failed">Failed</td>
+                        <td>0.5114</td>
+                        <td><pre>Security Risk: Forbidden imports</pre></td>
+                        <td><pre>import sys
+
+s = sys.stdin.readline().strip()
+ans = 0
+
+for i in range(len(s)):
+    if i >= 2:
+        if s[i-1] == '[' and s[i-2] == ':' and s[i-3] == '|' and s[i] == '[' and s[i+1] == '|' and s[i+2] == '|':
+            print(i+2, len(s)-i)
+            break
+        if s[i] == '[' and s[i+1] == '|':
+            print(i+1, len(s)-i)
+            break
+        if s[i] == ':' and s[i+1] == '|':
+            print(i+1, len(s)-i)
+            break
+        if s[i] == '|' and s[i+1] == ':':
+            print(i+1, len(s)-i)
+            break
+        if s[i] == '[' and s[i+1] == ']' and s[i+2] == ']':
+            print(i+1, len(s)-i)
+            break</pre></td>
+                    </tr>
+            
+                </tbody>
+            </table>
+        </div>
+        
+    </body>
+    </html>
+    

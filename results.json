@@ -1,0 +1,40 @@
+[
+  {
+    "problem_id": 0,
+    "prompt": "An accordion is a string (yes, in the real world accordions are musical instruments, but let's forget about it for a while) which can be represented as a concatenation of: an opening bracket (ASCII code $091$), a colon (ASCII code $058$), some (possibly zero) vertical line characters (ASCII code $124$), another colon, and a closing bracket (ASCII code $093$). The length of the accordion is the number of characters in it.\n\nFor example, [::], [:||:] and [:|||:] are accordions having length $4$, $6$ and $7$. (:|:), {:||:}, [:], ]:||:[ are not accordions. \n\nYou are given a string $s$. You want to transform it into an accordion by removing some (possibly zero) characters from it. Note that you may not insert new characters or reorder existing ones. Is it possible to obtain an accordion by removing characters from $s$, and if so, what is the maximum possible length of the result?\n\n\n-----Input-----\n\nThe only line contains one string $s$ ($1 \\le |s| \\le 500000$). It consists of lowercase Latin letters and characters [, ], : and |.\n\n\n-----Output-----\n\nIf it is not possible to obtain an accordion by removing some characters from $s$, print $-1$. Otherwise print maximum possible length of the resulting accordion.\n\n\n-----Examples-----\nInput\n|[a:b:|]\n\nOutput\n4\n\nInput\n|]:[|:]\n\nOutput\n-1",
+    "results": [
+      {
+        "ngram_len": "None",
+        "g_score": 0.5011261105537415,
+        "status": "Passed",
+        "output": "",
+        "generated_code": "# -*- coding: utf-8 -*-\n\nimport time\n\n\ndef main():\n    s = input()\n    # Your code here\n    if _check(s):\n        print(len(s))\n    else:\n        print(-1)\n\n\ndef _check(s):\n    \"\"\"\n    :type s: str\n    :rtype: bool\n    \"\"\"\n    if s[0] == \":\" or s[-1] == \":\":\n        return False\n    brackets = [\":\", \"|\"]\n    stack = []\n    for c in s:\n        if c not in brackets:\n            stack.append(c)\n        else:\n            if len(stack) < 1:\n                return False\n            if stack[-1] == brackets[0] and c == brackets[1]:\n                stack.pop()\n                continue\n            if stack[-1] == brackets[1] and c == brackets[0]:\n                stack.pop()\n                continue\n            return False\n    if len(stack) < 1:\n        return False\n    return True\n\nif __name__ == '__main__':\n    start_time = time.time()\n    main()\n    print(\"--- %s seconds ---\" % (time.time() - start_time))",
+        "attempts": 1
+      },
+      {
+        "ngram_len": "2",
+        "g_score": 0.5354267358779907,
+        "status": "Passed",
+        "output": "|[a:b:|\n7\n-1\n",
+        "generated_code": "while True:\n    s = input('> ')\n    \n    s = s.lstrip('[').rstrip(']')\n    if not s:\n        print(-1)\n        break\n    \n    l = 0\n    for i, c in enumerate(s):\n        if c == ':':\n            l += 1\n            if s[i:].rfind(':') > i:\n                continue\n            else:\n                s = s[:i] + ':'*l + s[i+1:]\n                break\n    \n    print(s)\n    print(len(s))",
+        "attempts": 3
+      },
+      {
+        "ngram_len": "5",
+        "g_score": 0.5604395866394043,
+        "status": "Passed",
+        "output": "-1\n",
+        "generated_code": "s = input().strip()\nacc = '[::]'\n\nfor i in range(100000):\n    if len(s) < acc.count(':')+1:\n        print(-1)\n        break\n    acc = '[' + acc[1:] + '::]'\n    s = s.replace(acc, '')\n\nelse:\n    print(len(s))",
+        "attempts": 3
+      },
+      {
+        "ngram_len": "10",
+        "g_score": 0.511354386806488,
+        "status": "Failed",
+        "output": "Security Risk: Forbidden imports",
+        "generated_code": "import sys\n\ns = sys.stdin.readline().strip()\nans = 0\n\nfor i in range(len(s)):\n    if i >= 2:\n        if s[i-1] == '[' and s[i-2] == ':' and s[i-3] == '|' and s[i] == '[' and s[i+1] == '|' and s[i+2] == '|':\n            print(i+2, len(s)-i)\n            break\n        if s[i] == '[' and s[i+1] == '|':\n            print(i+1, len(s)-i)\n            break\n        if s[i] == ':' and s[i+1] == '|':\n            print(i+1, len(s)-i)\n            break\n        if s[i] == '|' and s[i+1] == ':':\n            print(i+1, len(s)-i)\n            break\n        if s[i] == '[' and s[i+1] == ']' and s[i+2] == ']':\n            print(i+1, len(s)-i)\n            break",
+        "attempts": 5
+      }
+    ]
+  }
+]
