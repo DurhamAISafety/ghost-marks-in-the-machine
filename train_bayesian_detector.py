@@ -23,14 +23,15 @@ DETECTOR_SAVE_PATH = "bayesian_detector.pkl"
 
 
 def load_and_prepare_data(results_file):
-    """Load results.json and separate into watermarked/unwatermarked samples."""
+    """Load results.json and separate into watermarked/unwatermarked samples by ngram_len."""
     
     with open(results_file, 'r') as f:
         results = json.load(f)
     
     print(f"Loaded {len(results)} problems from {results_file}")
     
-    watermarked_codes = []
+    # Organize by ngram_len
+    watermarked_by_ngram = {2: [], 5: [], 10: []}
     unwatermarked_codes = []
     
     for problem in results:
@@ -42,12 +43,16 @@ def load_and_prepare_data(results_file):
                 if ngram_len == 'None':
                     unwatermarked_codes.append(code)
                 else:
-                    watermarked_codes.append(code)
+                    # Parse ngram_len as int
+                    ngram_val = int(ngram_len)
+                    if ngram_val in watermarked_by_ngram:
+                        watermarked_by_ngram[ngram_val].append(code)
     
-    print(f"Found {len(watermarked_codes)} watermarked samples")
     print(f"Found {len(unwatermarked_codes)} unwatermarked samples")
+    for ngram in [2, 5, 10]:
+        print(f"Found {len(watermarked_by_ngram[ngram])} watermarked samples with ngram_len={ngram}")
     
-    return watermarked_codes, unwatermarked_codes
+    return watermarked_by_ngram, unwatermarked_codes
 
 
 def tokenize_codes(tokenizer, codes, device):
@@ -65,30 +70,30 @@ def tokenize_codes(tokenizer, codes, device):
     return tokenized
 
 
-def train_detector(watermarked_codes, unwatermarked_codes):
-    """Train the Bayesian detector."""
+def train_detector_for_ngram(ngram_len, watermarked_codes, unwatermarked_codes, tokenizer, device):
+    """Train a Bayesian detector for a specific ngram_len."""
     
-    print("\n=== Initializing Tokenizer and Processor ===")
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    print(f"\n{'='*70}")
+    print(f"Training detector for ngram_len={ngram_len}")
+    print(f"{'='*70}")
     
     # Tokenize codes
-    print("\n=== Tokenizing Samples ===")
+    print(f"\n=== Tokenizing Samples for ngram_len={ngram_len} ===")
     watermarked_outputs = tokenize_codes(tokenizer, watermarked_codes, device)
     unwatermarked_outputs = tokenize_codes(tokenizer, unwatermarked_codes, device)
     
     print(f"Successfully tokenized {len(watermarked_outputs)} watermarked samples")
     print(f"Successfully tokenized {len(unwatermarked_outputs)} unwatermarked samples")
     
-    if len(watermarked_outputs) < 10 or len(unwatermarked_outputs) < 10:
-        raise ValueError("Need at least 10 samples of each type for training!")
+    if len(watermarked_outputs) < 5 or len(unwatermarked_outputs) < 5:
+        print(f"WARNING: Not enough samples for ngram_len={ngram_len}. Skipping.")
+        return None
     
-    # Initialize logits processor
-    print("\n=== Initializing Logits Processor ===")
+    # Initialize logits processor with specific ngram_len
+    print(f"\n=== Initializing Logits Processor (ngram_len={ngram_len}) ===")
     logits_processor = SynthIDTextWatermarkLogitsProcessor(
         keys=WATERMARK_KEYS,
-        ngram_len=5,  # Representative value
+        ngram_len=ngram_len,
         sampling_table_size=2**16,
         sampling_table_seed=0,
         context_history_size=1024,
@@ -96,7 +101,7 @@ def train_detector(watermarked_codes, unwatermarked_codes):
     )
     
     # Train detector
-    print("\n=== Training Bayesian Detector ===")
+    print(f"\n=== Training Bayesian Detector (ngram_len={ngram_len}) ===")
     print("This may take several minutes...")
     
     detector, min_loss = BayesianDetector.train_best_detector(
@@ -115,31 +120,74 @@ def train_detector(watermarked_codes, unwatermarked_codes):
         verbose=True
     )
     
-    print(f"\n=== Training Complete ===")
+    print(f"\n=== Training Complete for ngram_len={ngram_len} ===")
     print(f"Minimum validation loss: {min_loss:.4f}")
     
     # Save detector
+    save_path = f"bayesian_detector_ngram{ngram_len}.pkl"
     print(f"\n=== Saving Detector ===")
-    with open(DETECTOR_SAVE_PATH, 'wb') as f:
+    with open(save_path, 'wb') as f:
         pickle.dump({
             'detector': detector,
             'min_loss': min_loss,
+            'ngram_len': ngram_len,
             'watermark_keys': WATERMARK_KEYS
         }, f)
-    print(f"Detector saved to {DETECTOR_SAVE_PATH}")
+    print(f"Detector saved to {save_path}")
     
     return detector
 
 
-def score_samples(detector=None):
-    """Score samples from results.json using the trained detector."""
+def train_all_detectors(watermarked_by_ngram, unwatermarked_codes):
+    """Train detectors for all ngram lengths."""
     
-    # Load detector if not provided
-    if detector is None:
-        print(f"Loading detector from {DETECTOR_SAVE_PATH}...")
-        with open(DETECTOR_SAVE_PATH, 'rb') as f:
-            saved_data = pickle.load(f)
-            detector = saved_data['detector']
+    print("\n=== Initializing Tokenizer ===")
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+    
+    detectors = {}
+    
+    for ngram_len in [5, 2, 10]:  # Train ngram=5 first as requested
+        watermarked_codes = watermarked_by_ngram[ngram_len]
+        
+        if len(watermarked_codes) == 0:
+            print(f"\nNo watermarked samples for ngram_len={ngram_len}. Skipping.")
+            continue
+        
+        detector = train_detector_for_ngram(
+            ngram_len, 
+            watermarked_codes, 
+            unwatermarked_codes, 
+            tokenizer, 
+            device
+        )
+        
+        if detector is not None:
+            detectors[ngram_len] = detector
+    
+    return detectors
+
+
+def score_samples(detectors=None):
+    """Score samples from results.json using the trained detectors."""
+    
+    # Load detectors if not provided
+    if detectors is None:
+        print(f"Loading detectors...")
+        detectors = {}
+        for ngram_len in [2, 5, 10]:
+            detector_path = f"bayesian_detector_ngram{ngram_len}.pkl"
+            try:
+                with open(detector_path, 'rb') as f:
+                    saved_data = pickle.load(f)
+                    detectors[ngram_len] = saved_data['detector']
+                    print(f"Loaded detector for ngram_len={ngram_len}")
+            except FileNotFoundError:
+                print(f"Warning: Could not find detector for ngram_len={ngram_len}")
+    
+    if not detectors:
+        raise ValueError("No detectors loaded! Please train detectors first with --train")
     
     # Load results
     with open(RESULTS_FILE, 'r') as f:
@@ -165,11 +213,21 @@ def score_samples(detector=None):
             tokens = tokenizer.encode(code, return_tensors='pt', truncation=True, max_length=2048)
             tokens = tokens.to(device)
             
-            # Score
-            score = detector.score(tokens)
-            score_value = float(score[0])
+            # Score with appropriate detector
+            if ngram_len == 'None':
+                # For unwatermarked, we can use any detector - let's use ngram=5 if available
+                detector = detectors.get(5) or detectors.get(2) or detectors.get(10)
+                score_value = 0.0 if detector is None else float(detector.score(tokens)[0])
+            else:
+                # Use detector trained for this specific ngram_len
+                ngram_val = int(ngram_len)
+                detector = detectors.get(ngram_val)
+                if detector is None:
+                    print(f"  Warning: No detector for ngram_len={ngram_val}, skipping")
+                    continue
+                score_value = float(detector.score(tokens)[0])
             
-            print(f"  ngram_len={ngram_len:>4} | Score={score_value:.4f} | Status={result['status']}")
+            print(f"  ngram_len={ngram_len:>4} | Bayesian Score={score_value:.4f} | G-Score={result['g_score']:.4f} | Status={result['status']}")
             
             all_scores.append({
                 'problem_id': problem['problem_id'],
@@ -179,15 +237,17 @@ def score_samples(detector=None):
                 'status': result['status']
             })
     
-    # Summary statistics
+    # Summary statistics by ngram_len
     print("\n=== Summary Statistics ===")
     none_scores = [s['bayesian_score'] for s in all_scores if s['ngram_len'] == 'None']
-    wm_scores = [s['bayesian_score'] for s in all_scores if s['ngram_len'] != 'None']
     
     if none_scores:
         print(f"Unwatermarked (None): Mean={np.mean(none_scores):.4f}, Std={np.std(none_scores):.4f}")
-    if wm_scores:
-        print(f"Watermarked (2,5,10): Mean={np.mean(wm_scores):.4f}, Std={np.std(wm_scores):.4f}")
+    
+    for ngram in [2, 5, 10]:
+        ngram_scores = [s['bayesian_score'] for s in all_scores if s['ngram_len'] == str(ngram)]
+        if ngram_scores:
+            print(f"Watermarked (ngram={ngram}): Mean={np.mean(ngram_scores):.4f}, Std={np.std(ngram_scores):.4f}")
     
     # Save scores
     scores_file = "bayesian_scores.json"
@@ -197,27 +257,31 @@ def score_samples(detector=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Train and use Bayesian detector')
-    parser.add_argument('--train', action='store_true', help='Train a new detector')
-    parser.add_argument('--score', action='store_true', help='Score samples with trained detector')
+    parser = argparse.ArgumentParser(description='Train and use Bayesian detectors')
+    parser.add_argument('--train', action='store_true', help='Train detectors for all ngram lengths')
+    parser.add_argument('--score', action='store_true', help='Score samples with trained detectors')
     
     args = parser.parse_args()
     
     if args.train:
         # Load and prepare data
-        watermarked_codes, unwatermarked_codes = load_and_prepare_data(RESULTS_FILE)
+        watermarked_by_ngram, unwatermarked_codes = load_and_prepare_data(RESULTS_FILE)
         
-        # Train detector
-        detector = train_detector(watermarked_codes, unwatermarked_codes)
+        # Train detectors for all ngram lengths
+        detectors = train_all_detectors(watermarked_by_ngram, unwatermarked_codes)
+        
+        print(f"\n{'='*70}")
+        print(f"Training complete! Saved {len(detectors)} detector(s)")
+        print(f"{'='*70}")
         
         # Optionally score after training
         print("\n" + "="*60)
         response = input("Would you like to score the samples now? (y/n): ")
         if response.lower() == 'y':
-            score_samples(detector)
+            score_samples(detectors)
     
     elif args.score:
-        # Score samples with existing detector
+        # Score samples with existing detectors
         score_samples()
     
     else:
