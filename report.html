@@ -68,136 +68,113 @@ Output
         
                     <tr>
                         <td>None</td>
-                        <td>1</td>
-                        <td class="passed">Passed</td>
-                        <td>0.5011</td>
-                        <td><pre></pre></td>
-                        <td><pre># -*- coding: utf-8 -*-
-
-import time
-
-
-def main():
-    s = input()
-    # Your code here
-    if _check(s):
-        print(len(s))
-    else:
-        print(-1)
-
-
-def _check(s):
-    """
-    :type s: str
-    :rtype: bool
-    """
-    if s[0] == ":" or s[-1] == ":":
-        return False
-    brackets = [":", "|"]
+                        <td>5</td>
+                        <td class="failed">Passed (Wrong Output)</td>
+                        <td>0.5206</td>
+                        <td><pre>Expected: 4
+Got: </pre></td>
+                        <td><pre>def restoreString(s):
     stack = []
-    for c in s:
-        if c not in brackets:
-            stack.append(c)
-        else:
-            if len(stack) < 1:
-                return False
-            if stack[-1] == brackets[0] and c == brackets[1]:
-                stack.pop()
-                continue
-            if stack[-1] == brackets[1] and c == brackets[0]:
-                stack.pop()
-                continue
-            return False
-    if len(stack) < 1:
-        return False
-    return True
+    ans = ""
 
-if __name__ == '__main__':
-    start_time = time.time()
-    main()
-    print("--- %s seconds ---" % (time.time() - start_time))</pre></td>
+    for ch in s:
+        if ch == "(":
+            stack.append("(")
+        elif ch == ")":
+            if stack:
+                stack.pop()
+                ans += ")"
+            else:
+                return -1
+
+    return ans</pre></td>
                     </tr>
             
                     <tr>
                         <td>2</td>
-                        <td>3</td>
-                        <td class="passed">Passed</td>
-                        <td>0.5354</td>
-                        <td><pre>|[a:b:|
-7
--1
-</pre></td>
-                        <td><pre>while True:
-    s = input('> ')
-    
-    s = s.lstrip('[').rstrip(']')
-    if not s:
-        print(-1)
-        break
-    
-    l = 0
-    for i, c in enumerate(s):
-        if c == ':':
-            l += 1
-            if s[i:].rfind(':') > i:
-                continue
-            else:
-                s = s[:i] + ':'*l + s[i+1:]
-                break
-    
-    print(s)
-    print(len(s))</pre></td>
+                        <td>5</td>
+                        <td class="failed">Passed (Wrong Output)</td>
+                        <td>0.5315</td>
+                        <td><pre>Expected: 4
+Got: </pre></td>
+                        <td><pre>def minRemove(s):
+    stack = []
+    for i, char in enumerate(s):
+        if char == "(":
+            stack.append(i)
+        elif char == ")":
+            top = stack.pop()
+            if top == i:
+                return i
+        elif char == "|":
+            stack.append(i)
+    return -1</pre></td>
                     </tr>
             
                     <tr>
                         <td>5</td>
-                        <td>3</td>
-                        <td class="passed">Passed</td>
-                        <td>0.5604</td>
-                        <td><pre>-1
-</pre></td>
-                        <td><pre>s = input().strip()
-acc = '[::]'
+                        <td>5</td>
+                        <td class="failed">Error</td>
+                        <td>0.5051</td>
+                        <td><pre>No result returned</pre></td>
+                        <td><pre>def numberOfAccordions(s):
+    left = 0
+    right = len(s) - 1
+    count = 0
 
-for i in range(100000):
-    if len(s) < acc.count(':')+1:
-        print(-1)
-        break
-    acc = '[' + acc[1:] + '::]'
-    s = s.replace(acc, '')
+    while left < right:
+        if s[left:right] == ":" + s[left:right]:
+            count += 1
+            left += 1
+        elif s[left:right] == "}" + s[left:right]:
+            count -= 1
+            right -= 1
+        else:
+            right -= 1
 
-else:
-    print(len(s))</pre></td>
+    return count</pre></td>
                     </tr>
             
                     <tr>
                         <td>10</td>
                         <td>5</td>
-                        <td class="failed">Failed</td>
-                        <td>0.5114</td>
-                        <td><pre>Security Risk: Forbidden imports</pre></td>
-                        <td><pre>import sys
+                        <td class="failed">Runtime Error</td>
+                        <td>0.5317</td>
+                        <td><pre>Traceback (most recent call last):
+  File "/home2/nchw73/Year4/code-watermarking/pipeline.py", line 199, in _run_code_process
+    exec(code, safe_globals)
+  File "<string>", line 24
+    print(can_accordion([a:b:|]))
+                          ^
+SyntaxError: invalid syntax
+</pre></td>
+                        <td><pre>def can_accordion(s):
+    # Initialize left and right pointer to start and end of the string
+    left = 0
+    right = len(s) - 1
 
-s = sys.stdin.readline().strip()
-ans = 0
+    # Remove characters until the left pointer reaches the end of the string
+    while left < right:
+        if s[left] == ":" and s[right] == " ":
+            # If it's possible to form an accordion, move the left pointer to the next character
+            left += 1
+        elif s[left] == ":" and s[right] != " ":
+            # If it's possible to form an accordion, move the right pointer to the next character
+            right -= 1
+        else:
+            # If it's not possible to form an accordion, move the left and right pointers to the next character
+            left += 1
+            right -= 1
 
-for i in range(len(s)):
-    if i >= 2:
-        if s[i-1] == '[' and s[i-2] == ':' and s[i-3] == '|' and s[i] == '[' and s[i+1] == '|' and s[i+2] == '|':
-            print(i+2, len(s)-i)
-            break
-        if s[i] == '[' and s[i+1] == '|':
-            print(i+1, len(s)-i)
-            break
-        if s[i] == ':' and s[i+1] == '|':
-            print(i+1, len(s)-i)
-            break
-        if s[i] == '|' and s[i+1] == ':':
-            print(i+1, len(s)-i)
-            break
-        if s[i] == '[' and s[i+1] == ']' and s[i+2] == ']':
-            print(i+1, len(s)-i)
-            break</pre></td>
+    # Return the length of the accordion
+    return right - left + 1
+
+
+# Test the function
+print(can_accordion([a:b:|]))
+print(can_accordion(":[|:]"))
+print(can_accordion("[a:b:"))
+print(can_accordion("|]:[|:]"))</pre></td>
                     </tr>
             
                 </tbody>

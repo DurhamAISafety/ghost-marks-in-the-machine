@@ -5,34 +5,34 @@
     "results": [
       {
         "ngram_len": "None",
-        "g_score": 0.5011261105537415,
-        "status": "Passed",
-        "output": "",
-        "generated_code": "# -*- coding: utf-8 -*-\n\nimport time\n\n\ndef main():\n    s = input()\n    # Your code here\n    if _check(s):\n        print(len(s))\n    else:\n        print(-1)\n\n\ndef _check(s):\n    \"\"\"\n    :type s: str\n    :rtype: bool\n    \"\"\"\n    if s[0] == \":\" or s[-1] == \":\":\n        return False\n    brackets = [\":\", \"|\"]\n    stack = []\n    for c in s:\n        if c not in brackets:\n            stack.append(c)\n        else:\n            if len(stack) < 1:\n                return False\n            if stack[-1] == brackets[0] and c == brackets[1]:\n                stack.pop()\n                continue\n            if stack[-1] == brackets[1] and c == brackets[0]:\n                stack.pop()\n                continue\n            return False\n    if len(stack) < 1:\n        return False\n    return True\n\nif __name__ == '__main__':\n    start_time = time.time()\n    main()\n    print(\"--- %s seconds ---\" % (time.time() - start_time))",
-        "attempts": 1
+        "g_score": 0.5206349492073059,
+        "status": "Passed (Wrong Output)",
+        "output": "Expected: 4\nGot: ",
+        "generated_code": "def restoreString(s):\n    stack = []\n    ans = \"\"\n\n    for ch in s:\n        if ch == \"(\":\n            stack.append(\"(\")\n        elif ch == \")\":\n            if stack:\n                stack.pop()\n                ans += \")\"\n            else:\n                return -1\n\n    return ans",
+        "attempts": 5
       },
       {
         "ngram_len": "2",
-        "g_score": 0.5354267358779907,
-        "status": "Passed",
-        "output": "|[a:b:|\n7\n-1\n",
-        "generated_code": "while True:\n    s = input('> ')\n    \n    s = s.lstrip('[').rstrip(']')\n    if not s:\n        print(-1)\n        break\n    \n    l = 0\n    for i, c in enumerate(s):\n        if c == ':':\n            l += 1\n            if s[i:].rfind(':') > i:\n                continue\n            else:\n                s = s[:i] + ':'*l + s[i+1:]\n                break\n    \n    print(s)\n    print(len(s))",
-        "attempts": 3
+        "g_score": 0.5314591526985168,
+        "status": "Passed (Wrong Output)",
+        "output": "Expected: 4\nGot: ",
+        "generated_code": "def minRemove(s):\n    stack = []\n    for i, char in enumerate(s):\n        if char == \"(\":\n            stack.append(i)\n        elif char == \")\":\n            top = stack.pop()\n            if top == i:\n                return i\n        elif char == \"|\":\n            stack.append(i)\n    return -1",
+        "attempts": 5
       },
       {
         "ngram_len": "5",
-        "g_score": 0.5604395866394043,
-        "status": "Passed",
-        "output": "-1\n",
-        "generated_code": "s = input().strip()\nacc = '[::]'\n\nfor i in range(100000):\n    if len(s) < acc.count(':')+1:\n        print(-1)\n        break\n    acc = '[' + acc[1:] + '::]'\n    s = s.replace(acc, '')\n\nelse:\n    print(len(s))",
-        "attempts": 3
+        "g_score": 0.505050539970398,
+        "status": "Error",
+        "output": "No result returned",
+        "generated_code": "def numberOfAccordions(s):\n    left = 0\n    right = len(s) - 1\n    count = 0\n\n    while left < right:\n        if s[left:right] == \":\" + s[left:right]:\n            count += 1\n            left += 1\n        elif s[left:right] == \"}\" + s[left:right]:\n            count -= 1\n            right -= 1\n        else:\n            right -= 1\n\n    return count",
+        "attempts": 5
       },
       {
         "ngram_len": "10",
-        "g_score": 0.511354386806488,
-        "status": "Failed",
-        "output": "Security Risk: Forbidden imports",
-        "generated_code": "import sys\n\ns = sys.stdin.readline().strip()\nans = 0\n\nfor i in range(len(s)):\n    if i >= 2:\n        if s[i-1] == '[' and s[i-2] == ':' and s[i-3] == '|' and s[i] == '[' and s[i+1] == '|' and s[i+2] == '|':\n            print(i+2, len(s)-i)\n            break\n        if s[i] == '[' and s[i+1] == '|':\n            print(i+1, len(s)-i)\n            break\n        if s[i] == ':' and s[i+1] == '|':\n            print(i+1, len(s)-i)\n            break\n        if s[i] == '|' and s[i+1] == ':':\n            print(i+1, len(s)-i)\n            break\n        if s[i] == '[' and s[i+1] == ']' and s[i+2] == ']':\n            print(i+1, len(s)-i)\n            break",
+        "g_score": 0.5316511392593384,
+        "status": "Runtime Error",
+        "output": "Traceback (most recent call last):\n  File \"/home2/nchw73/Year4/code-watermarking/pipeline.py\", line 199, in _run_code_process\n    exec(code, safe_globals)\n  File \"<string>\", line 24\n    print(can_accordion([a:b:|]))\n                          ^\nSyntaxError: invalid syntax\n",
+        "generated_code": "def can_accordion(s):\n    # Initialize left and right pointer to start and end of the string\n    left = 0\n    right = len(s) - 1\n\n    # Remove characters until the left pointer reaches the end of the string\n    while left < right:\n        if s[left] == \":\" and s[right] == \" \":\n            # If it's possible to form an accordion, move the left pointer to the next character\n            left += 1\n        elif s[left] == \":\" and s[right] != \" \":\n            # If it's possible to form an accordion, move the right pointer to the next character\n            right -= 1\n        else:\n            # If it's not possible to form an accordion, move the left and right pointers to the next character\n            left += 1\n            right -= 1\n\n    # Return the length of the accordion\n    return right - left + 1\n\n\n# Test the function\nprint(can_accordion([a:b:|]))\nprint(can_accordion(\":[|:]\"))\nprint(can_accordion(\"[a:b:\"))\nprint(can_accordion(\"|]:[|:]\"))",
         "attempts": 5
       }
     ]
