@@ -22,7 +22,7 @@ def load_model_and_tokenizer():
 def generate_code(model, tokenizer, device, prompt, ngram_len=None):
     # Use chat template for instruction-tuned model
     messages = [
-        {"role": "user", "content": f"Please write a Python script for the following problem. Follow this exact structure:\n1. Define a function `solve()` that takes no arguments.\n2. Inside `solve()`, read input from stdin and print output to stdout.\n3. Call `solve()` at the end of the script.\n\n{prompt}\n\nEnsure the code is inside a ```python block."}
+        {"role": "user", "content": f"Please write a Python script for the following problem. The answer should be:\n\ndef solve():\n    # define function here with no arguments, which reads input from stdin and prints output to stdout\n\nsolve()\n\n{prompt}\n\nEnsure the code is inside a ```python block."}
     ]
     
     # Fix: apply_chat_template typically returns input_ids (list or tensor), not a dict by default unless specified.
