@@ -53,26 +53,34 @@ def generate_code(prompt, ngram_len=None):
     )
     
     generated_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
-    # Extract code part (heuristic: usually after the prompt)
-    # For APPS, the prompt is the problem description. The model continues it.
-    # We'll just return the full text for now, or try to strip the prompt if it's exact.
-    if generated_text.startswith(prompt):
-        return generated_text[len(prompt):]
-    return generated_text
+    
+    # Extract code part
+    code = generated_text
+    if code.startswith(prompt):
+        code = code[len(prompt):]
+        
+    # Clean Markdown
+    code = code.strip()
+    if code.startswith("```python"):
+        code = code[9:]
+    elif code.startswith("```"):
+        code = code[3:]
+    if code.endswith("```"):
+        code = code[:-3]
+        
+    return code.strip()
 
 def compute_g_score(text, ngram_len=5):
     # Default to ngram_len=5 for detection if not specified or if None (baseline)
-    # If we generated with None, we still want to see if it triggers the detector for a specific key config.
-    # Let's stick to checking against the standard ngram_len=5 keys for consistency, 
-    # OR check against the specific ngram_len used for generation.
-    # The prompt asks for "gscores", implying we should check if the watermark is present.
-    # If we generated with ngram=2, we should detect with ngram=2 keys.
-    # If we generated with None, we can check with any, let's use 5 as standard.
-    
     detect_ngram = ngram_len if ngram_len is not None else 5
     
+    # Tokenize with the same tokenizer
     inputs = tokenizer(text, return_tensors="pt").to(device)
     input_ids = inputs.input_ids
+    
+    # If text is empty after cleaning, return 0
+    if input_ids.shape[1] == 0:
+        return 0.0
     
     processor = SynthIDTextWatermarkLogitsProcessor(
         keys=WATERMARK_KEYS,
@@ -103,6 +111,10 @@ def _run_code_process(code, input_str, queue):
             local_scope = {}
             
             # Mock input()
+            # Ensure input_str is a string
+            if not isinstance(input_str, str):
+                input_str = ""
+                
             input_iter = iter(input_str.split('\n'))
             def mock_input(prompt=""):
                 try:
@@ -117,6 +129,7 @@ def _run_code_process(code, input_str, queue):
             
             queue.put(("Passed", f.getvalue()))
     except Exception:
+        # Return full traceback
         queue.put(("Failed", traceback.format_exc()))
 
 def run_code_safely(code, input_cases):
@@ -200,12 +213,14 @@ def main():
         
         print(f"  G-Score: {score:.4f}")
         print(f"  Status: {status}")
+        if status == "Failed":
+            print(f"  Error: {output}")
         
         results.append({
             "ngram_len": str(n),
             "g_score": score,
             "status": status,
-            "output": output[:100] + "..." if len(output) > 100 else output
+            "output": output # Save full output
         })
         
     # Save to CSV
