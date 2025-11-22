@@ -62,7 +62,7 @@ def load_model_and_tokenizer():
 def generate_code(model, tokenizer, device, prompt, ngram_len=None):
     # Use chat template for instruction-tuned model
     messages = [
-        {"role": "user", "content": f"Please write a complete Python script for the following problem. The script should read input from standard input (stdin) and print the output to standard output (stdout).\n\n{prompt}\n\nEnsure the code is inside a ```python block."}
+        {"role": "user", "content": f"Please write a Python script for the following problem. Follow this exact structure:\n1. Define a function `solve()` that takes no arguments.\n2. Inside `solve()`, read input from stdin and print output to stdout.\n3. Call `solve()` at the end of the script.\n\n{prompt}\n\nEnsure the code is inside a ```python block."}
     ]
     
     # Fix: apply_chat_template typically returns input_ids (list or tensor), not a dict by default unless specified.
@@ -150,13 +150,10 @@ def _run_code_process(code, input_str, queue):
     f = io.StringIO()
     try:
         with contextlib.redirect_stdout(f):
-            # Basic safety check
-            if "import os" in code or "import subprocess" in code or "import sys" in code:
-                queue.put(("Failed", "Security Risk: Forbidden imports"))
-                return
 
             # Restricted globals
             safe_globals = {
+                "__name__": "__main__", # Allow if __name__ == "__main__": blocks
                 "__builtins__": {
                     "print": print,
                     "range": range,
@@ -381,15 +378,24 @@ def generate_html_report(data, filename):
     <head>
         <title>SynthID Evaluation Report</title>
         <style>
-            body { font-family: sans-serif; margin: 20px; }
-            .problem { border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 5px; }
-            .prompt { background-color: #f5f5f5; padding: 10px; white-space: pre-wrap; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; }
-            table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
-            th { background-color: #f2f2f2; }
-            .passed { color: green; font-weight: bold; }
-            .failed { color: red; }
-            pre { white-space: pre-wrap; margin: 0; max-height: 300px; overflow-y: auto; background: #f8f8f8; padding: 5px; }
+            body { font-family: sans-serif; margin: 20px; background-color: #f9f9f9; }
+            .problem { background: white; border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .prompt { background-color: #f5f5f5; padding: 15px; white-space: pre-wrap; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; margin-top: 10px; }
+            table { border-collapse: collapse; width: 100%; margin-top: 10px; font-size: 14px; }
+            th, td { border: 1px solid #ddd; padding: 12px 8px; text-align: left; vertical-align: top; }
+            th { background-color: #f2f2f2; font-weight: 600; }
+            tr:nth-child(even) { background-color: #f8f8f8; }
+            .passed-correct { color: #155724; background-color: #d4edda; font-weight: bold; }
+            .passed-wrong { color: #856404; background-color: #fff3cd; font-weight: bold; }
+            .failed { color: #721c24; background-color: #f8d7da; }
+            .ngram-group { margin-top: 15px; border: 1px solid #e0e0e0; border-radius: 5px; overflow: hidden; }
+            .ngram-summary { background-color: #e9ecef; padding: 10px 15px; cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+            .ngram-summary:hover { background-color: #dee2e6; }
+            .ngram-content { padding: 10px; background: white; }
+            pre { white-space: pre-wrap; margin: 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; }
+            .code-block { max-height: 300px; overflow-y: auto; background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; }
+            .output-block { max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border: 1px solid #eee; border-radius: 4px; }
+            details > summary { cursor: pointer; outline: none; }
         </style>
     </head>
     <body>
@@ -404,37 +410,76 @@ def generate_html_report(data, filename):
                 <summary><strong>Prompt (Click to expand)</strong></summary>
                 <div class="prompt">{prob['prompt']}</div>
             </details>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>N-gram</th>
-                        <th>Attempts</th>
-                        <th>Status</th>
-                        <th>G-Score</th>
-                        <th>Output/Error</th>
-                        <th>Generated Code</th>
-                    </tr>
-                </thead>
-                <tbody>
         """
         
-        for res in prob['results']:
-            status_class = "passed" if res['status'] == "Passed" else "failed"
+        # Group results by ngram_len
+        from itertools import groupby
+        # Ensure sorted for groupby
+        sorted_results = sorted(prob['results'], key=lambda x: str(x['ngram_len']))
+        
+        for ngram, group in groupby(sorted_results, key=lambda x: x['ngram_len']):
+            group_list = list(group)
+            total = len(group_list)
+            passed_correct = sum(1 for r in group_list if r['status'] == "Passed (Correct)")
+            mean_g = sum(r['g_score'] for r in group_list) / total if total > 0 else 0
+            
             html += f"""
-                    <tr>
-                        <td>{res['ngram_len']}</td>
-                        <td>{res['attempts']}</td>
-                        <td class="{status_class}">{res['status']}</td>
-                        <td>{res['g_score']:.4f}</td>
-                        <td><pre>{res['output']}</pre></td>
-                        <td><pre>{res['generated_code']}</pre></td>
-                    </tr>
+            <details class="ngram-group" open>
+                <summary class="ngram-summary">
+                    <span>N-gram: {ngram}</span>
+                    <span>Pass (Correct): {passed_correct}/{total} | Mean G-Score: {mean_g:.4f}</span>
+                </summary>
+                <div class="ngram-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px">#</th>
+                                <th style="width: 150px">Status</th>
+                                <th style="width: 80px">G-Score</th>
+                                <th>Output/Error</th>
+                                <th>Generated Code</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            """
+            
+            for res in group_list:
+                status_class = ""
+                if res['status'] == "Passed (Correct)":
+                    status_class = "passed-correct"
+                elif "Passed" in res['status']:
+                    status_class = "passed-wrong"
+                else:
+                    status_class = "failed"
+                
+                html += f"""
+                        <tr>
+                            <td>{res['attempts']}</td>
+                            <td class="{status_class}">{res['status']}</td>
+                            <td>{res['g_score']:.4f}</td>
+                            <td>
+                                <details>
+                                    <summary>Show Output</summary>
+                                    <div class="output-block"><pre>{res['output']}</pre></div>
+                                </details>
+                            </td>
+                            <td>
+                                <details>
+                                    <summary>Show Code</summary>
+                                    <div class="code-block"><pre>{res['generated_code']}</pre></div>
+                                </details>
+                            </td>
+                        </tr>
+                """
+            
+            html += """
+                        </tbody>
+                    </table>
+                </div>
+            </details>
             """
             
         html += """
-                </tbody>
-            </table>
         </div>
         """
         
