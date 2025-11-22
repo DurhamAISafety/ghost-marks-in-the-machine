@@ -12,9 +12,18 @@ import io
 import contextlib
 import traceback
 import json
+import os
+from dotenv import load_dotenv
+from huggingface_hub import login
+
+# Load environment variables
+load_dotenv()
+HF_TOKEN = os.getenv("HF_TOKEN")
+if HF_TOKEN:
+    login(token=HF_TOKEN)
 
 # --- Configuration ---
-MODEL_NAME = "deepseek-ai/deepseek-coder-1.3b-base"
+MODEL_NAME = "google/gemma-2b-it"
 WATERMARK_KEYS = [101, 202, 303, 404, 505, 606, 707, 808, 909]
 NGRAM_LENS = [None, 2, 5, 10]
 TIMEOUT_SECONDS = 5
@@ -37,10 +46,18 @@ def load_model_and_tokenizer():
     return model, tokenizer, device
 
 def generate_code(model, tokenizer, device, prompt, ngram_len=None):
-    # Wrap prompt to ensure Python code generation
-    full_prompt = f"Please write a Python solution for the following problem:\n\n{prompt}\n\n```python\n"
+    # Use chat template for instruction-tuned model
+    messages = [
+        {"role": "user", "content": f"Please write a Python solution for the following problem:\n\n{prompt}\n\nEnsure the code is inside a ```python block."}
+    ]
     
-    inputs = tokenizer(full_prompt, return_tensors="pt").to(device)
+    inputs = tokenizer.apply_chat_template(
+        messages,
+        add_generation_prompt=True,
+        tokenize=True,
+        return_dict=True,
+        return_tensors="pt",
+    ).to(device)
     
     watermark_config = None
     if ngram_len is not None:
@@ -59,25 +76,23 @@ def generate_code(model, tokenizer, device, prompt, ngram_len=None):
         pad_token_id=tokenizer.eos_token_id
     )
     
-    generated_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
+    # Decode only the new tokens
+    generated_text = tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True)
     
     # Extract code part
-    # We expect the model to continue after ```python\n
-    if full_prompt in generated_text:
-        code = generated_text.split(full_prompt)[1]
-    else:
-        # Fallback: try to find the prompt or just return everything
-        code = generated_text
-        
+    code = generated_text
+    
     # Clean Markdown
     code = code.strip()
-    if code.startswith("```python"):
-        code = code[9:]
-    elif code.startswith("```"):
-        code = code[3:]
-    if code.endswith("```"):
-        code = code[:-3]
-        
+    if "```python" in code:
+        code = code.split("```python")[1]
+        if "```" in code:
+            code = code.split("```")[0]
+    elif "```" in code:
+        code = code.split("```")[1]
+        if "```" in code:
+            code = code.split("```")[0]
+            
     return code.strip()
 
 def compute_g_score(tokenizer, device, text, ngram_len=5):

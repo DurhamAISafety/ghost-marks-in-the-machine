@@ -2,3 +2,6 @@ torch
 transformers
 synthid-text
 accelerate
+datasets
+pandas
+python-dotenv
