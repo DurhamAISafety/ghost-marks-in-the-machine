@@ -186,33 +186,56 @@ def main():
     for n in NGRAM_LENS:
         print(f"\nProcessing ngram_len={n}...")
         
-        try:
-            code = generate_code(model, tokenizer, device, prompt, ngram_len=n)
-        except Exception as e:
-            print(f"Generation failed: {e}")
-            results.append({
-                "ngram_len": str(n),
-                "g_score": 0.0,
-                "status": "Generation Error",
-                "output": str(e)
-            })
-            continue
+        final_result = None
+        
+        for attempt in range(1, 6):
+            print(f"  Attempt {attempt}/5...")
             
-        score = compute_g_score(tokenizer, device, code, ngram_len=n)
+            # Generate
+            try:
+                code = generate_code(model, tokenizer, device, prompt, ngram_len=n)
+            except Exception as e:
+                print(f"Generation failed: {e}")
+                final_result = {
+                    "problem_id": sample['problem_id'],
+                    "prompt": prompt,
+                    "ngram_len": str(n),
+                    "g_score": 0.0,
+                    "status": "Generation Error",
+                    "output": str(e),
+                    "generated_code": "",
+                    "attempts": attempt
+                }
+                continue
+                
+            # Detect
+            score = compute_g_score(tokenizer, device, code, ngram_len=n)
+            
+            # Execute
+            status, output = run_code_safely(code, test_inputs)
+            
+            print(f"    G-Score: {score:.4f}")
+            print(f"    Status: {status}")
+            if status == "Failed":
+                print(f"    Error: {output}")
+            
+            final_result = {
+                "problem_id": sample['problem_id'],
+                "prompt": prompt,
+                "ngram_len": str(n),
+                "g_score": score,
+                "status": status,
+                "output": output,
+                "generated_code": code,
+                "attempts": attempt
+            }
+            
+            if status == "Passed":
+                print(f"  Passed on attempt {attempt}!")
+                break
         
-        status, output = run_code_safely(code, test_inputs)
-        
-        print(f"  G-Score: {score:.4f}")
-        print(f"  Status: {status}")
-        if status == "Failed":
-            print(f"  Error: {output}")
-        
-        results.append({
-            "ngram_len": str(n),
-            "g_score": score,
-            "status": status,
-            "output": output
-        })
+        if final_result:
+            results.append(final_result)
         
     df = pd.DataFrame(results)
     df.to_csv(OUTPUT_FILE, index=False)

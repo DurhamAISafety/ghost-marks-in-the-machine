@@ -1,0 +1,17 @@
+ngram_len,g_score,status,output
+None,0.5053139925003052,Failed,"Traceback (most recent call last):
+  File ""/home2/nchw73/Year4/code-watermarking/pipeline.py"", line 132, in _run_code_process
+    exec(code, {}, local_scope)
+  File ""<string>"", line 17, in <module>
+IndexError: pop from an empty deque
+"
+2,0.570555567741394,Passed,
+5,0.563380241394043,Failed,"Traceback (most recent call last):
+  File ""/home2/nchw73/Year4/code-watermarking/pipeline.py"", line 132, in _run_code_process
+    exec(code, {}, local_scope)
+  File ""<string>"", line 10
+    ```
+    ^
+SyntaxError: invalid syntax
+"
+10,0.5388601422309875,Failed,Security Risk: Forbidden imports
