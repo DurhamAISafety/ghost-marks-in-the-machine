@@ -75,7 +75,7 @@ def main():
         for n in NGRAM_LENS:
             print(f"  Processing ngram_len={n}...")
             
-            for attempt in range(1, 6):
+            for attempt in range(1, 4): # 3 attempts
                 # Generate
                 try:
                     code = generate_code(model, tokenizer, device, prompt, ngram_len=n)
