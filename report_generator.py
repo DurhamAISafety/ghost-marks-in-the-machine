@@ -43,9 +43,20 @@ def generate_html_report(data, filename):
         <h1>SynthID Evaluation Report</h1>
     """
     
+    <div style="margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <label for="problem-search" style="font-weight: bold; margin-right: 10px;">Filter by Problem ID:</label>
+        <input type="text" id="problem-search" placeholder="Enter Problem ID (e.g., 0, 10, 100)" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 250px;">
+        <span style="margin-left: 10px; color: #666; font-size: 14px;">Available IDs: <span id="available-ids"></span></span>
+    </div>
+
+    <div id="problems-container">
+    """
+    
+    problem_ids = [str(p['problem_id']) for p in data]
+    
     for prob in data:
         html += f"""
-        <div class="problem">
+        <div class="problem" data-problem-id="{prob['problem_id']}">
             <h2>Problem ID: {prob['problem_id']}</h2>
             <details>
                 <summary><strong>Prompt (Click to expand)</strong></summary>
@@ -111,7 +122,29 @@ def generate_html_report(data, filename):
         </div>
         """
         
-    html += """
+    html += f"""
+    </div>
+
+    <script>
+        const problemIds = {problem_ids};
+        document.getElementById('available-ids').textContent = problemIds.join(', ');
+
+        const searchInput = document.getElementById('problem-search');
+        const problems = document.querySelectorAll('.problem');
+
+        searchInput.addEventListener('input', function(e) {{
+            const searchTerm = e.target.value.trim();
+            
+            problems.forEach(prob => {{
+                const id = prob.getAttribute('data-problem-id');
+                if (searchTerm === "" || id.includes(searchTerm)) {{
+                    prob.style.display = 'block';
+                }} else {{
+                    prob.style.display = 'none';
+                }}
+            }});
+        }});
+    </script>
     </body>
     </html>
     """
