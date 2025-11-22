@@ -35,7 +35,10 @@ def load_model_and_tokenizer():
     return model, tokenizer, device
 
 def generate_code(model, tokenizer, device, prompt, ngram_len=None):
-    inputs = tokenizer(prompt, return_tensors="pt").to(device)
+    # Wrap prompt to ensure Python code generation
+    full_prompt = f"Please write a Python solution for the following problem:\n\n{prompt}\n\n```python\n"
+    
+    inputs = tokenizer(full_prompt, return_tensors="pt").to(device)
     
     watermark_config = None
     if ngram_len is not None:
@@ -48,7 +51,7 @@ def generate_code(model, tokenizer, device, prompt, ngram_len=None):
         **inputs,
         watermarking_config=watermark_config,
         do_sample=True,
-        max_new_tokens=300,
+        max_new_tokens=400,
         top_k=40,
         temperature=0.7,
         pad_token_id=tokenizer.eos_token_id
@@ -57,9 +60,12 @@ def generate_code(model, tokenizer, device, prompt, ngram_len=None):
     generated_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
     
     # Extract code part
-    code = generated_text
-    if code.startswith(prompt):
-        code = code[len(prompt):]
+    # We expect the model to continue after ```python\n
+    if full_prompt in generated_text:
+        code = generated_text.split(full_prompt)[1]
+    else:
+        # Fallback: try to find the prompt or just return everything
+        code = generated_text
         
     # Clean Markdown
     code = code.strip()
