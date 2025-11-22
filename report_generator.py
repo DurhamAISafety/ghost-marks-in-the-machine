@@ -43,6 +43,7 @@ def generate_html_report(data, filename):
         <h1>SynthID Evaluation Report</h1>
     """
     
+    html += """
     <div style="margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <label for="problem-search" style="font-weight: bold; margin-right: 10px;">Filter by Problem ID:</label>
         <input type="text" id="problem-search" placeholder="Enter Problem ID (e.g., 0, 10, 100)" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 250px;">
