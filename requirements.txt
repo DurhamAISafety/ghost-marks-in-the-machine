@@ -5,3 +5,4 @@ accelerate
 datasets
 pandas
 python-dotenv
+jinja2==3.0.3

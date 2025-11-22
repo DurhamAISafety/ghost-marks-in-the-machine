@@ -1,10 +1,5 @@
 # DO NOT RUN ON LOCAL w/o memory
 
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, SynthIDTextWatermarkingConfig
-from transformers import SynthIDTextWatermarkLogitsProcessor
-from datasets import load_dataset
-import pandas as pd
 import multiprocessing
 import time
 import sys
@@ -13,8 +8,18 @@ import contextlib
 import traceback
 import json
 import os
+import importlib
 from dotenv import load_dotenv
 from huggingface_hub import login
+
+# Delayed imports for performance (spawn method re-imports top-level)
+torch = None
+AutoTokenizer = None
+AutoModelForCausalLM = None
+SynthIDTextWatermarkingConfig = None
+SynthIDTextWatermarkLogitsProcessor = None
+load_dataset = None
+pd = None
 
 # Load environment variables
 load_dotenv()
@@ -32,6 +37,14 @@ OUTPUT_FILE = "results.csv"
 # --- Helper Functions ---
 
 def load_model_and_tokenizer():
+    global torch, AutoTokenizer, AutoModelForCausalLM, SynthIDTextWatermarkingConfig, SynthIDTextWatermarkLogitsProcessor
+    
+    # Import here to avoid heavy loading in worker processes
+    if torch is None:
+        import torch
+        from transformers import AutoTokenizer, AutoModelForCausalLM, SynthIDTextWatermarkingConfig
+        from transformers import SynthIDTextWatermarkLogitsProcessor
+        
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if device == "cpu" and torch.backends.mps.is_available():
         device = "mps"
@@ -51,13 +64,16 @@ def generate_code(model, tokenizer, device, prompt, ngram_len=None):
         {"role": "user", "content": f"Please write a Python solution for the following problem:\n\n{prompt}\n\nEnsure the code is inside a ```python block."}
     ]
     
-    inputs = tokenizer.apply_chat_template(
+    # Fix: apply_chat_template typically returns input_ids (list or tensor), not a dict by default unless specified.
+    # Also, some versions don't support return_dict=True. Safer to get input_ids and create dict.
+    input_ids = tokenizer.apply_chat_template(
         messages,
         add_generation_prompt=True,
         tokenize=True,
-        return_dict=True,
         return_tensors="pt",
     ).to(device)
+    
+    inputs = {"input_ids": input_ids}
     
     watermark_config = None
     if ngram_len is not None:
@@ -95,7 +111,7 @@ def generate_code(model, tokenizer, device, prompt, ngram_len=None):
             
     return code.strip()
 
-def compute_g_score(tokenizer, device, text, ngram_len=5):
+def compute_g_score(tokenizer, device, text, ngram_len=5, processor=None):
     detect_ngram = ngram_len if ngram_len is not None else 5
     
     inputs = tokenizer(text, return_tensors="pt").to(device)
@@ -104,14 +120,20 @@ def compute_g_score(tokenizer, device, text, ngram_len=5):
     if input_ids.shape[1] == 0:
         return 0.0
     
-    processor = SynthIDTextWatermarkLogitsProcessor(
-        keys=WATERMARK_KEYS,
-        ngram_len=detect_ngram,
-        sampling_table_size=2**16,
-        sampling_table_seed=0,
-        context_history_size=1024,
-        device=device
-    )
+    # Optimization: Reuse processor if provided
+    if processor is None:
+        # Import if needed (should be imported by load_model_and_tokenizer)
+        if 'SynthIDTextWatermarkLogitsProcessor' not in globals() or SynthIDTextWatermarkLogitsProcessor is None:
+             from transformers import SynthIDTextWatermarkLogitsProcessor
+             
+        processor = SynthIDTextWatermarkLogitsProcessor(
+            keys=WATERMARK_KEYS,
+            ngram_len=detect_ngram,
+            sampling_table_size=2**16,
+            sampling_table_seed=0,
+            context_history_size=1024,
+            device=device
+        )
     
     g_values = processor.compute_g_values(input_ids)
     mean_g = g_values.float().mean().item()
@@ -120,7 +142,10 @@ def compute_g_score(tokenizer, device, text, ngram_len=5):
 # --- Safe Execution ---
 
 def _run_code_process(code, input_str, queue):
-    # Capturing stdout
+    # Improve Sandbox: Clear modules to prevent state leakage (partial)
+    # Note: True sandboxing requires OS-level isolation (Docker/nsjail).
+    
+    # Capture stdout
     f = io.StringIO()
     try:
         with contextlib.redirect_stdout(f):
@@ -129,8 +154,33 @@ def _run_code_process(code, input_str, queue):
                 queue.put(("Failed", "Security Risk: Forbidden imports"))
                 return
 
-            # Create a local scope
-            local_scope = {}
+            # Restricted globals
+            safe_globals = {
+                "__builtins__": {
+                    "print": print,
+                    "range": range,
+                    "len": len,
+                    "int": int,
+                    "float": float,
+                    "str": str,
+                    "list": list,
+                    "dict": dict,
+                    "set": set,
+                    "tuple": tuple,
+                    "bool": bool,
+                    "enumerate": enumerate,
+                    "zip": zip,
+                    "map": map,
+                    "filter": filter,
+                    "sorted": sorted,
+                    "min": min,
+                    "max": max,
+                    "sum": sum,
+                    "abs": abs,
+                    "round": round,
+                    "input": None # Will be mocked
+                }
+            }
             
             # Mock input()
             if not isinstance(input_str, str):
@@ -143,17 +193,30 @@ def _run_code_process(code, input_str, queue):
                 except StopIteration:
                     return ""
             
-            local_scope['input'] = mock_input
+            safe_globals["__builtins__"]["input"] = mock_input
             
-            # Execute
-            exec(code, {}, local_scope)
+            # Execute in restricted scope
+            exec(code, safe_globals)
             
             queue.put(("Passed", f.getvalue()))
     except Exception:
-        queue.put(("Failed", traceback.format_exc()))
+        queue.put(("Runtime Error", traceback.format_exc()))
 
-def run_code_safely(code, input_cases):
-    input_str = input_cases[0] if input_cases else ""
+def run_code_safely(code, input_cases, expected_outputs=None):
+    # Run against first test case for now (or loop if needed)
+    # APPS usually has multiple cases. We'll check the first one or all.
+    # For simplicity/speed in this pipeline, checking the first case is a start,
+    # but to be "Passed (Correct)", we should ideally check all.
+    
+    if not input_cases:
+        return "Skipped", "No test cases"
+        
+    # Handle APPS format inconsistencies
+    # input_cases can be a list of strings
+    # expected_outputs can be a list of strings
+    
+    input_str = input_cases[0] if len(input_cases) > 0 else ""
+    expected = expected_outputs[0] if expected_outputs and len(expected_outputs) > 0 else None
     
     queue = multiprocessing.Queue()
     p = multiprocessing.Process(target=_run_code_process, args=(code, input_str, queue))
@@ -166,7 +229,19 @@ def run_code_safely(code, input_cases):
         return "Timeout", "Execution exceeded time limit"
     
     if not queue.empty():
-        return queue.get()
+        status, output = queue.get()
+        if status == "Passed":
+            # Check correctness
+            output = output.strip()
+            if expected:
+                expected = str(expected).strip()
+                if output == expected:
+                    return "Passed (Correct)", output
+                else:
+                    return "Passed (Wrong Output)", f"Expected: {expected}\nGot: {output}"
+            return "Passed (No Check)", output
+        return status, output
+        
     return "Error", "No result returned"
 
 # --- Main Pipeline ---
@@ -175,6 +250,11 @@ def main():
     # Load model ONLY in main process
     model, tokenizer, device = load_model_and_tokenizer()
 
+    # Delayed import
+    global load_dataset
+    if load_dataset is None:
+        from datasets import load_dataset
+        
     print("Loading APPS dataset...")
     ds = load_dataset("codeparrot/apps", "all", split="test", trust_remote_code=True)
     
@@ -189,14 +269,24 @@ def main():
     prompt = sample['question']
     input_output = sample['input_output']
     
-    if isinstance(input_output, str):
-        io_data = json.loads(input_output)
-    else:
-        io_data = input_output
+    # Robust parsing
+    try:
+        if isinstance(input_output, str):
+            io_data = json.loads(input_output)
+        else:
+            io_data = input_output
+    except json.JSONDecodeError:
+        print("Error parsing input_output JSON")
+        io_data = {"inputs": [], "outputs": []}
         
     test_inputs = io_data.get('inputs', [])
+    test_outputs = io_data.get('outputs', [])
     
     print(f"Selected Problem ID: {sample['problem_id']}")
+    
+    # Pre-initialize processor to save time
+    from transformers import SynthIDTextWatermarkLogitsProcessor
+    processor_cache = {} # Cache by ngram_len if needed, or just one if we reuse logic
     
     results = []
     
@@ -224,10 +314,22 @@ def main():
                 continue
                 
             # Detect
-            score = compute_g_score(tokenizer, device, code, ngram_len=n)
+            # Use cached processor
+            if n not in processor_cache:
+                # Initialize if not in cache
+                processor_cache[n] = SynthIDTextWatermarkLogitsProcessor(
+                    keys=WATERMARK_KEYS,
+                    ngram_len=n if n is not None else 5,
+                    sampling_table_size=2**16,
+                    sampling_table_seed=0,
+                    context_history_size=1024,
+                    device=device
+                )
+            
+            score = compute_g_score(tokenizer, device, code, ngram_len=n, processor=processor_cache[n])
             
             # Execute
-            status, output = run_code_safely(code, test_inputs)
+            status, output = run_code_safely(code, test_inputs, test_outputs)
             
             print(f"    G-Score: {score:.4f}")
             print(f"    Status: {status}")
@@ -243,8 +345,8 @@ def main():
                 "attempts": attempt
             }
             
-            if status == "Passed":
-                print(f"  Passed on attempt {attempt}!")
+            if status == "Passed (Correct)":
+                print(f"  Passed (Correct) on attempt {attempt}!")
                 break
         
         if final_result:
