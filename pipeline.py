@@ -24,8 +24,9 @@ pd = None
 # Load environment variables
 load_dotenv()
 HF_TOKEN = os.getenv("HF_TOKEN")
-if HF_TOKEN:
-    login(token=HF_TOKEN)
+
+# Prevent tokenizer parallelism issues
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # --- Configuration ---
 MODEL_NAME = "google/gemma-2b-it"
@@ -61,7 +62,7 @@ def load_model_and_tokenizer():
 def generate_code(model, tokenizer, device, prompt, ngram_len=None):
     # Use chat template for instruction-tuned model
     messages = [
-        {"role": "user", "content": f"Please write a Python solution for the following problem:\n\n{prompt}\n\nEnsure the code is inside a ```python block."}
+        {"role": "user", "content": f"Please write a complete Python script for the following problem. The script should read input from standard input (stdin) and print the output to standard output (stdout).\n\n{prompt}\n\nEnsure the code is inside a ```python block."}
     ]
     
     # Fix: apply_chat_template typically returns input_ids (list or tensor), not a dict by default unless specified.
@@ -247,6 +248,9 @@ def run_code_safely(code, input_cases, expected_outputs=None):
 # --- Main Pipeline ---
 
 def main():
+    if HF_TOKEN:
+        login(token=HF_TOKEN)
+
     # Load model ONLY in main process
     model, tokenizer, device = load_model_and_tokenizer()
 
