@@ -1,8 +1,8 @@
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, SynthIDTextWatermarkingConfig
-from transformers import SynthIDTextWatermarkLogitsProcessor
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import SynthIDTextWatermarkLogitsProcessor, LogitsProcessorList
 
-MODEL_NAME = "google/gemma-2b-it"
+MODEL_NAME = "google/codegemma-7b-it"
 WATERMARK_KEYS = [101, 202, 303, 404, 505, 606, 707, 808, 909]
 
 def load_model_and_tokenizer():
@@ -36,16 +36,21 @@ def generate_code(model, tokenizer, device, prompt, ngram_len=None):
     
     inputs = {"input_ids": input_ids}
     
-    watermark_config = None
+    logits_processor = LogitsProcessorList()
     if ngram_len is not None:
-        watermark_config = SynthIDTextWatermarkingConfig(
+        watermark_processor = SynthIDTextWatermarkLogitsProcessor(
             keys=WATERMARK_KEYS,
             ngram_len=ngram_len,
+            sampling_table_size=2**16,
+            sampling_table_seed=0,
+            context_history_size=1024,
+            device=device,
         )
+        logits_processor.append(watermark_processor)
     
     outputs = model.generate(
         **inputs,
-        watermarking_config=watermark_config,
+        logits_processor=logits_processor,
         do_sample=True,
         max_new_tokens=400,
         top_k=40,
