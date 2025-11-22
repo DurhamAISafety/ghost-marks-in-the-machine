@@ -9,6 +9,7 @@ import sys
 import io
 import contextlib
 import traceback
+import json
 
 # --- Configuration ---
 MODEL_NAME = "deepseek-ai/deepseek-coder-1.3b-base"
@@ -17,22 +18,23 @@ NGRAM_LENS = [None, 2, 5, 10]
 TIMEOUT_SECONDS = 5
 OUTPUT_FILE = "results.csv"
 
-# --- Model Setup ---
-device = "cuda" if torch.cuda.is_available() else "cpu"
-if device == "cpu" and torch.backends.mps.is_available():
-    device = "mps"
-
-print(f"Loading {MODEL_NAME} on {device}...")
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME, 
-    device_map="auto", 
-    torch_dtype=torch.bfloat16 if device != "mps" else torch.float16
-)
-
 # --- Helper Functions ---
 
-def generate_code(prompt, ngram_len=None):
+def load_model_and_tokenizer():
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if device == "cpu" and torch.backends.mps.is_available():
+        device = "mps"
+
+    print(f"Loading {MODEL_NAME} on {device}...")
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_NAME, 
+        device_map="auto", 
+        torch_dtype=torch.bfloat16 if device != "mps" else torch.float16
+    )
+    return model, tokenizer, device
+
+def generate_code(model, tokenizer, device, prompt, ngram_len=None):
     inputs = tokenizer(prompt, return_tensors="pt").to(device)
     
     watermark_config = None
@@ -46,7 +48,7 @@ def generate_code(prompt, ngram_len=None):
         **inputs,
         watermarking_config=watermark_config,
         do_sample=True,
-        max_new_tokens=300, # Increased for APPS solutions
+        max_new_tokens=300,
         top_k=40,
         temperature=0.7,
         pad_token_id=tokenizer.eos_token_id
@@ -70,15 +72,12 @@ def generate_code(prompt, ngram_len=None):
         
     return code.strip()
 
-def compute_g_score(text, ngram_len=5):
-    # Default to ngram_len=5 for detection if not specified or if None (baseline)
+def compute_g_score(tokenizer, device, text, ngram_len=5):
     detect_ngram = ngram_len if ngram_len is not None else 5
     
-    # Tokenize with the same tokenizer
     inputs = tokenizer(text, return_tensors="pt").to(device)
     input_ids = inputs.input_ids
     
-    # If text is empty after cleaning, return 0
     if input_ids.shape[1] == 0:
         return 0.0
     
@@ -111,7 +110,6 @@ def _run_code_process(code, input_str, queue):
             local_scope = {}
             
             # Mock input()
-            # Ensure input_str is a string
             if not isinstance(input_str, str):
                 input_str = ""
                 
@@ -129,15 +127,9 @@ def _run_code_process(code, input_str, queue):
             
             queue.put(("Passed", f.getvalue()))
     except Exception:
-        # Return full traceback
         queue.put(("Failed", traceback.format_exc()))
 
 def run_code_safely(code, input_cases):
-    # input_cases is a list of strings (inputs) or just one string?
-    # APPS provides input/output pairs.
-    # For simplicity in this pipeline, we might just check if it runs without error on the first case.
-    
-    # If input_cases is None or empty, run with empty input
     input_str = input_cases[0] if input_cases else ""
     
     queue = multiprocessing.Queue()
@@ -157,12 +149,12 @@ def run_code_safely(code, input_cases):
 # --- Main Pipeline ---
 
 def main():
+    # Load model ONLY in main process
+    model, tokenizer, device = load_model_and_tokenizer()
+
     print("Loading APPS dataset...")
-    # Load "all" config, then filter
     ds = load_dataset("codeparrot/apps", "all", split="test", trust_remote_code=True)
     
-    # Filter for interview difficulty
-    # difficulty column values are: "introductory", "interview", "competition"
     print("Filtering for interview difficulty...")
     ds = ds.filter(lambda x: x['difficulty'] == 'interview')
     
@@ -170,13 +162,10 @@ def main():
         print("Error: No samples found with difficulty='interview'")
         return
 
-    # Select one prompt (e.g., index 0)
     sample = ds[0]
     prompt = sample['question']
-    input_output = sample['input_output'] # JSON string or dict
+    input_output = sample['input_output']
     
-    # Parse inputs (it's usually a dict with 'inputs' and 'outputs' lists)
-    import json
     if isinstance(input_output, str):
         io_data = json.loads(input_output)
     else:
@@ -185,16 +174,14 @@ def main():
     test_inputs = io_data.get('inputs', [])
     
     print(f"Selected Problem ID: {sample['problem_id']}")
-    # print(f"Prompt:\n{prompt[:200]}...")
     
     results = []
     
     for n in NGRAM_LENS:
         print(f"\nProcessing ngram_len={n}...")
         
-        # Generate
         try:
-            code = generate_code(prompt, ngram_len=n)
+            code = generate_code(model, tokenizer, device, prompt, ngram_len=n)
         except Exception as e:
             print(f"Generation failed: {e}")
             results.append({
@@ -205,10 +192,8 @@ def main():
             })
             continue
             
-        # Detect
-        score = compute_g_score(code, ngram_len=n)
+        score = compute_g_score(tokenizer, device, code, ngram_len=n)
         
-        # Execute
         status, output = run_code_safely(code, test_inputs)
         
         print(f"  G-Score: {score:.4f}")
@@ -220,17 +205,15 @@ def main():
             "ngram_len": str(n),
             "g_score": score,
             "status": status,
-            "output": output # Save full output
+            "output": output
         })
         
-    # Save to CSV
     df = pd.DataFrame(results)
     df.to_csv(OUTPUT_FILE, index=False)
     print(f"\nResults saved to {OUTPUT_FILE}")
     print(df)
 
 if __name__ == "__main__":
-    # Set start method to spawn for compatibility
     try:
         multiprocessing.set_start_method('spawn')
     except RuntimeError:
