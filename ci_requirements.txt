@@ -1,4 +1,4 @@
-# torch
+torch
 transformers
 # accelerate
 # datasets<3.0.0
