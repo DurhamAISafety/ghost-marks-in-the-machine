@@ -17,13 +17,18 @@ from huggingface_hub import login
 # Load environment variables
 load_dotenv()
 
-
 class CPU_Unpickler(pickle.Unpickler):
     """Custom unpickler to load CUDA models on CPU and handle old module paths."""
+    
     def find_class(self, module, name):
         # Handle CUDA to CPU mapping
         if module == 'torch.storage' and name == '_load_from_bytes':
             return lambda b: torch.load(io.BytesIO(b), map_location='cpu')
+        
+        # Handle SynthIDTextWatermarkLogitsProcessor from transformers module
+        if module == 'transformers.generation.logits_process' and name == 'SynthIDTextWatermarkLogitsProcessor':
+            from synthid_text import SynthIDTextWatermarkLogitsProcessor
+            return SynthIDTextWatermarkLogitsProcessor
         
         # Remap old module paths to new src structure
         # Models were pickled when modules were in root, now they're in src/
@@ -33,7 +38,6 @@ class CPU_Unpickler(pickle.Unpickler):
             module = f'src.{module}'
         
         return super().find_class(module, name)
-
 
 class WatermarkDetector:
     """Simple interface for detecting watermarked Python code."""
