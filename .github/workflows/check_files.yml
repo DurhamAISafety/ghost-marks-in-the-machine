@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Add any dependencies your test function needs:
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -r ci_requirements.txt
       
       - name: Get changed files
