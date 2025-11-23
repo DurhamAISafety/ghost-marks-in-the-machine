@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watermark Detector - SynthID</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+                    <path d="M16 8L10 14H14V20H18V14H22L16 8Z" fill="white"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
+                            <stop stop-color="#667eea"/>
+                            <stop offset="1" stop-color="#764ba2"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>Watermark Detector</h1>
+            </div>
+            <p class="subtitle">Detect AI-generated watermarks in Python code using SynthID</p>
+        </header>
+
+        <main>
+            <div class="editor-section">
+                <div class="section-header">
+                    <label for="code-input">Python Code</label>
+                    <div class="header-actions">
+                        <button id="clear-btn" class="text-btn">Clear</button>
+                        <button id="example-btn" class="text-btn">Load Example</button>
+                    </div>
+                </div>
+                <textarea 
+                    id="code-input" 
+                    placeholder="Paste your Python code here..."
+                    spellcheck="false"
+                >def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)</textarea>
+            </div>
+
+            <div class="controls">
+                <div class="threshold-control">
+                    <label for="threshold">
+                        Detection Threshold: <span id="threshold-value">0.50</span>
+                    </label>
+                    <input 
+                        type="range" 
+                        id="threshold" 
+                        min="0" 
+                        max="100" 
+                        value="50"
+                    >
+                    <div class="threshold-hint">
+                        Lower = more sensitive, Higher = more confident
+                    </div>
+                </div>
+                
+                <button id="detect-btn" class="detect-btn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Analyze Code
+                </button>
+            </div>
+
+            <div id="result-container" class="result-container hidden">
+                <div class="result-header">
+                    <h2>Detection Result</h2>
+                    <div id="status-badge" class="status-badge"></div>
+                </div>
+                
+                <div class="result-grid">
+                    <div class="result-card">
+                        <div class="result-label">Watermarked</div>
+                        <div id="is-watermarked" class="result-value"></div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-label">Detection Score</div>
+                        <div id="score" class="result-value"></div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-label">Confidence</div>
+                        <div id="confidence" class="result-value"></div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-label">N-gram Length</div>
+                        <div id="ngram" class="result-value"></div>
+                    </div>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-labels">
+                        <span>Not Watermarked</span>
+                        <span>Watermarked</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                        <div id="threshold-marker" class="threshold-marker"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Analyzing code...</p>
+            </div>
+
+            <div id="error-container" class="error-container hidden">
+                <div class="error-icon">⚠️</div>
+                <p id="error-message"></p>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by <a href="https://github.com/google-deepmind/synthid-text" target="_blank">SynthID</a> • 
+            <a href="https://huggingface.co/google/codegemma-7b-it" target="_blank">CodeGemma</a></p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
