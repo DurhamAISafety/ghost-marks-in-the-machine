@@ -1,2 +1,2 @@
 
-print("Integer here")
+print("integer here")
