@@ -1,0 +1,3 @@
+[project]
+name = "code-watermarking"
+packages = ["src"]
