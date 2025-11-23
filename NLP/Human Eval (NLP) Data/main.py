@@ -44,8 +44,8 @@ def get_ngrams(filename, row, num, n):
         print(f"{gram}: {count}")
 
 
-# get_ngrams("human_eval.jsonl", "watermarked_model_response", 10, 3)
-# get_ngrams("human_eval.jsonl", "unwatermarked_model_response", 10, 3)
+get_ngrams("human_eval.jsonl", "watermarked_model_response", 10, 1)
+get_ngrams("human_eval.jsonl", "unwatermarked_model_response", 10, 1)
 
 
 ### TF-IDF ###
@@ -141,63 +141,63 @@ def tf_idf_calculator(corpus):
 
 ### Plotting
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+# import pandas as pd
+# import matplotlib.pyplot as plt
+# import seaborn as sns
 
-try:
-    df = pd.read_csv("tfidf_results.csv", index_col='word')
-except FileNotFoundError:
-    print("Error: 'tfidf_results.csv' not found. Please ensure the file was generated in the previous step.")
-    exit()
+# try:
+#     df = pd.read_csv("tfidf_results.csv", index_col='word')
+# except FileNotFoundError:
+#     print("Error: 'tfidf_results.csv' not found. Please ensure the file was generated in the previous step.")
+#     exit()
 
-threshold = 1.5e-5
+# threshold = 1.5e-5
 
-df['total_tfidf'] = df['watermarked_tfidf'] + df['unwatermarked_tfidf']
+# df['total_tfidf'] = df['watermarked_tfidf'] + df['unwatermarked_tfidf']
 
-df_filtered = df[df['total_tfidf'] > threshold]
+# df_filtered = df[df['total_tfidf'] > threshold]
 
-df_plot = df_filtered.sort_values(by='total_tfidf', ascending=True)
+# df_plot = df_filtered.sort_values(by='total_tfidf', ascending=True)
 
-N = len(df_plot)
+# N = len(df_plot)
 
-if not df_plot.empty:
-    colors = sns.color_palette("colorblind")
-    watermarked_color = colors[1] 
-    unwatermarked_color = colors[2]
+# if not df_plot.empty:
+#     colors = sns.color_palette("colorblind")
+#     watermarked_color = colors[1] 
+#     unwatermarked_color = colors[2]
 
-    fig, ax = plt.subplots(figsize=(10, N * 0.2))
+#     fig, ax = plt.subplots(figsize=(10, N * 0.2))
 
-    bar_width = 0.35
-    words = df_plot.index
-    y_pos = range(N)
+#     bar_width = 0.35
+#     words = df_plot.index
+#     y_pos = range(N)
 
-    ax.barh(
-        [p + bar_width/2 for p in y_pos],
-        df_plot['unwatermarked_tfidf'],
-        bar_width,
-        label='Unwatermarked',
-        color=unwatermarked_color
-    )
+#     ax.barh(
+#         [p + bar_width/2 for p in y_pos],
+#         df_plot['unwatermarked_tfidf'],
+#         bar_width,
+#         label='Unwatermarked',
+#         color=unwatermarked_color
+#     )
 
-    ax.barh(
-        [p - bar_width/2 for p in y_pos],
-        df_plot['watermarked_tfidf'],
-        bar_width,
-        label='Watermarked',
-        color=watermarked_color
-    )
+#     ax.barh(
+#         [p - bar_width/2 for p in y_pos],
+#         df_plot['watermarked_tfidf'],
+#         bar_width,
+#         label='Watermarked',
+#         color=watermarked_color
+#     )
 
-    ax.set_yticks(y_pos)
-    ax.set_yticklabels(words)
+#     ax.set_yticks(y_pos)
+#     ax.set_yticklabels(words)
 
-    ax.set_xlabel('TF-IDF Score')
-    ax.set_title(f'Words with Total TF-IDF > {threshold} (N={N})')
-    ax.legend(loc='lower right')
-    plt.tight_layout()
+#     ax.set_xlabel('TF-IDF Score')
+#     ax.set_title(f'Words with Total TF-IDF > {threshold} (N={N})')
+#     ax.legend(loc='lower right')
+#     plt.tight_layout()
 
-    plt.savefig("tfidf_threshold_comparison_plot_seaborn_colors.png")
+#     plt.savefig("tfidf_threshold_comparison_plot_seaborn_colors.png")
 
-    print(f"Plot saved to tfidf_threshold_comparison_plot_seaborn_colors.png showing {N} words with a total TF-IDF score above {threshold}, using seaborn 'deep' colors.")
-else:
-    print(f"No words found with a total TF-IDF score above {threshold} to plot.")
+#     print(f"Plot saved to tfidf_threshold_comparison_plot_seaborn_colors.png showing {N} words with a total TF-IDF score above {threshold}, using seaborn 'deep' colors.")
+# else:
+#     print(f"No words found with a total TF-IDF score above {threshold} to plot.")
