@@ -27,7 +27,7 @@ class CPU_Unpickler(pickle.Unpickler):
         
         # Handle SynthIDTextWatermarkLogitsProcessor from transformers module
         if module == 'transformers.generation.logits_process' and name == 'SynthIDTextWatermarkLogitsProcessor':
-            from synthid_text import SynthIDTextWatermarkLogitsProcessor
+            from transformers import SynthIDTextWatermarkLogitsProcessor
             return SynthIDTextWatermarkLogitsProcessor
         
         # Remap old module paths to new src structure
