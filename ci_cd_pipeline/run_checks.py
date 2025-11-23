@@ -4,11 +4,21 @@
 import sys
 
 # Local imports
-from test import test
+from src.detector_utils import WatermarkDetector
+
+
+def load_file(filepath: str) -> str:
+    """ Loads in file from filepath. """
+    with open(filepath, "r") as f:
+        file_content = f.read()
+    return file_content
 
 
 def main():
     """ Main function. """
+    # Create detector (loads .env automatically)
+    detector = WatermarkDetector(ngram_len=5)
+
     files = sys.argv[1:]
 
     if not files:
@@ -20,12 +30,19 @@ def main():
     for filepath in files:
         print(f"Checking: {filepath}")
         try:
-            result = test(filepath)
-            if result:
-                print("✓ Passed")
-            else:
-                print("✗ Failed")
+            # Load in the changed file
+            code = load_file(filepath)
+
+            # Detect watermarks in any Python code string
+            result = detector.detect(code, threshold=0.5)
+
+            if result['is_watermarked']:
+                print(f"✗ Watermark detected: code likely AI generated,\n confidence: {result['confidence']}")
                 failed.append(filepath)
+
+            else:
+                print(f"✓ Code unlikely AI generated,\n confidence: {result['confidence']}")
+
         except Exception as e:
             print(f"✗ Error: {e}")
             failed.append(filepath)
@@ -41,6 +58,7 @@ def main():
         sys.exit(1)
     # No SynthID watermark detected
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
