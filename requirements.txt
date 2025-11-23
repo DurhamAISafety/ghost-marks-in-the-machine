@@ -1,0 +1,36 @@
+###############################################
+# Watermark Detection Project Dependencies    #
+#                                             #
+# This file has been reorganized to separate  #
+# minimal runtime requirements (detection)    #
+# from optional heavy training/report extras. #
+###############################################
+
+# --- Core detection (fast install) ---
+torch
+transformers
+huggingface_hub
+python-dotenv
+
+# --- Optional: reporting / analysis ---
+jinja2>=3.1.0
+pandas
+
+# --- Optional: training / experimentation (slow) ---
+# Install only if you plan to retrain detectors.
+accelerate
+datasets<3.0.0
+scikit-learn
+
+# JAX stack (not needed for basic detection script)
+jax
+jaxlib
+flax
+optax
+jaxtyping
+
+astor
+
+# Usage:
+#   pip install -r requirements.txt            # full environment
+#   pip install -r requirements-min.txt        # minimal detection only

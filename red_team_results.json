@@ -1,0 +1,504 @@
+[
+  {
+    "problem_id": 0,
+    "ngram_len": "None",
+    "original_code": "def solve():\n    s = input()\n    count = 0\n    for i in s:\n        if i == '[' or i == ']' or i == ':' or i == '|':\n            count += 1\n    if (count == 0) or (count % 3 != 0):\n        print(-1)\n    else:\n        print(count//3*2)\n\nsolve()",
+    "original_score": 0.49297571182250977,
+    "attacks": [
+      {
+        "attack_name": "baseline",
+        "modified_code": "def solve():\n    s = input()\n    count = 0\n    for i in s:\n        if i == '[' or i == ']' or i == ':' or i == '|':\n            count += 1\n    if (count == 0) or (count % 3 != 0):\n        print(-1)\n    else:\n        print(count//3*2)\n\nsolve()",
+        "detection_score": 0.49297571182250977,
+        "score_drop": 0.0,
+        "score_drop_pct": 0.0,
+        "metadata": {
+          "intensity": 0
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "rename_1_vars",
+        "modified_code": "def solve():\n    s = input()\n    count = 0\n    for a in s:\n        if a == '[' or a == ']' or a == ':' or a == '|':\n            count += 1\n    if count == 0 or count % 3 != 0:\n        print(-1)\n    else:\n        print(count // 3 * 2)\n\n\nsolve()\n",
+        "detection_score": 0.5197956562042236,
+        "score_drop": -0.026819944381713867,
+        "score_drop_pct": -5.440419018324797,
+        "metadata": {
+          "intensity": 1,
+          "type": "variable_rename"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "rename_all_4_vars",
+        "modified_code": "def solve():\n    b = input()\n    c = 0\n    for a in b:\n        if a == '[' or a == ']' or a == ':' or a == '|':\n            c += 1\n    if c == 0 or c % 3 != 0:\n        print(-1)\n    else:\n        print(c // 3 * 2)\n\n\nd()\n",
+        "detection_score": 0.5197956562042236,
+        "score_drop": -0.026819944381713867,
+        "score_drop_pct": -5.440419018324797,
+        "metadata": {
+          "intensity": 4,
+          "type": "variable_rename"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "rename_functions",
+        "modified_code": "def solve():\n    s = input()\n    count = 0\n    for i in s:\n        if i == '[' or i == ']' or i == ':' or i == '|':\n            count += 1\n    if (count == 0) or (count % 3 != 0):\n        print(-1)\n    else:\n        print(count//3*2)\n\nsolve()",
+        "detection_score": 0.49297571182250977,
+        "score_drop": 0.0,
+        "score_drop_pct": 0.0,
+        "metadata": {
+          "intensity": 5,
+          "type": "function_rename"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "add_whitespace",
+        "modified_code": "def solve():\n    s = input()\n\n    count = 0\n    for i in s:\n        if i == '[' or i == ']' or i == ':' or i == '|':\n            count += 1\n    if (count == 0) or (count % 3 != 0):\n        print(-1)\n    else:\n        print(count//3*2)\n\nsolve()",
+        "detection_score": 0.48914429545402527,
+        "score_drop": 0.003831416368484497,
+        "score_drop_pct": 0.7772018532758779,
+        "metadata": {
+          "intensity": 3,
+          "type": "whitespace"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "remove_whitespace",
+        "modified_code": "def solve():\n    s = input()\n    count = 0\n    for i in s:\n        if i == '[' or i == ']' or i == ':' or i == '|':\n            count += 1\n    if (count == 0) or (count % 3 != 0):\n        print(-1)\n    else:\n        print(count//3*2)\nsolve()",
+        "detection_score": 0.49169859290122986,
+        "score_drop": 0.0012771189212799072,
+        "score_drop_pct": 0.2590632541628581,
+        "metadata": {
+          "intensity": 3,
+          "type": "whitespace"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "add_comments",
+        "modified_code": "def solve():\n    # Processing data\n    s = input()\n    count = 0\n    for i in s:\n    # Processing data\n        if i == '[' or i == ']' or i == ':' or i == '|':\n            count += 1\n    if (count == 0) or (count % 3 != 0):\n        print(-1)\n    else:\n        print(count//3*2)\n\n    # Processing data\nsolve()",
+        "detection_score": 0.4945533573627472,
+        "score_drop": -0.0015776455402374268,
+        "score_drop_pct": -0.3200250037481441,
+        "metadata": {
+          "intensity": 2,
+          "type": "comments"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "reformat_compact",
+        "modified_code": "def solve():\n    s = input()\n    count = 0\n    for i in s:\n        if i == '[' or i == ']' or i == ':' or i == '|':\n            count += 1\n    if count == 0 or count % 3 != 0:\n        print(-1)\n    else:\n        print(count // 3 * 2)\n\nsolve()\n",
+        "detection_score": 0.5070242285728455,
+        "score_drop": -0.014048516750335693,
+        "score_drop_pct": -2.8497381135470015,
+        "metadata": {
+          "intensity": 2,
+          "type": "formatting"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "combined_light",
+        "modified_code": "def solve():\n    var_7553 = input()\n    # Calculate result\n    var_4647 = 0\n    for var_7920 in var_7553:\n        if (var_7920 == '[' or var_7920 == ']' or var_7920 == ':' or \n            var_7920 == '|'):\n    # TODO: optimize\n            var_4647 += 1\n    # Processing data\n    if var_4647 == 0 or var_4647 % 3 != 0:\n        print(-1)\n    else:\n        print(var_4647 // 3 * 2)\n    # Helper function\n\n\nsolve()\n",
+        "detection_score": 0.5129199028015137,
+        "score_drop": -0.019944190979003906,
+        "score_drop_pct": -4.04567415811848,
+        "metadata": {
+          "intensity": 4,
+          "type": "combined"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "combined_medium",
+        "modified_code": "def solve():\n    var_2651 = input()\n    # Calculate result\n    var_5912 = 0\n    for var_7874 in var_2651:\n        if (var_7874 == '[' or var_7874 == ']' or var_7874 == ':' or \n            var_7874 == '|'):\n            var_5912 += 1\n    if var_5912 == 0 or var_5912 % 3 != 0:\n        print(-1)\n    # Helper function\n    else:\n        print(var_5912 // 3 * 2)\n\n    # Variable initialization\n\n    # Processing data\nvar_1119()\n\n    # Variable initialization",
+        "detection_score": 0.5037037134170532,
+        "score_drop": -0.010728001594543457,
+        "score_drop_pct": -2.1761724436448406,
+        "metadata": {
+          "intensity": 6,
+          "type": "combined"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "combined_heavy",
+        "modified_code": "def solve():\n    var_5832 = input()\n    var_3786 = 0\n    for var_1802 in var_5832:\n        if (var_1802 == '[' or var_1802 == ']' or var_1802 == ':' or \n            var_1802 == '|'):\n            var_3786 += 1\n    if var_3786 == 0 or var_3786 % 3 != 0:\n        print(-1)\n    else:\n        print(var_3786 // 3 * 2)\n\nvar_7490()\n",
+        "detection_score": 0.48575499653816223,
+        "score_drop": 0.007220715284347534,
+        "score_drop_pct": 1.464720291726516,
+        "metadata": {
+          "intensity": 9,
+          "type": "combined"
+        },
+        "watermark_detected": false
+      }
+    ],
+    "analysis": {
+      "breaking_point_attack": "Not broken",
+      "breaking_point_intensity": "N/A",
+      "breaking_point_score": "N/A",
+      "all_rename_results": [
+        {
+          "num_renames": 1,
+          "score": 0.5197956562042236,
+          "detected": true
+        },
+        {
+          "num_renames": 4,
+          "score": 0.5197956562042236,
+          "detected": true
+        }
+      ]
+    }
+  },
+  {
+    "problem_id": 1,
+    "ngram_len": "None",
+    "original_code": "def solve():\n    x = int(input())\n    max_sum = 0\n    max_num = 0\n    for i in range(1, x + 1):\n        sum_digits = sum(int(digit) for digit in str(i))\n        if sum_digits > max_sum or (sum_digits == max_sum and i > max_num):\n            max_sum = sum_digits\n            max_num = i\n    print(max_num)\n\nsolve()",
+    "original_score": 0.5363636612892151,
+    "attacks": [
+      {
+        "attack_name": "baseline",
+        "modified_code": "def solve():\n    x = int(input())\n    max_sum = 0\n    max_num = 0\n    for i in range(1, x + 1):\n        sum_digits = sum(int(digit) for digit in str(i))\n        if sum_digits > max_sum or (sum_digits == max_sum and i > max_num):\n            max_sum = sum_digits\n            max_num = i\n    print(max_num)\n\nsolve()",
+        "detection_score": 0.5363636612892151,
+        "score_drop": 0.0,
+        "score_drop_pct": 0.0,
+        "metadata": {
+          "intensity": 0
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "rename_1_vars",
+        "modified_code": "def solve():\n    x = int(input())\n    max_sum = 0\n    max_num = 0\n    for i in range(1, x + 1):\n        sum_digits = sum(int(digit) for digit in str(i))\n        if sum_digits > max_sum or sum_digits == max_sum and i > max_num:\n            max_sum = sum_digits\n            max_num = i\n    print(max_num)\n\n\na()\n",
+        "detection_score": 0.5363636612892151,
+        "score_drop": 0.0,
+        "score_drop_pct": 0.0,
+        "metadata": {
+          "intensity": 1,
+          "type": "variable_rename"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "rename_5_vars",
+        "modified_code": "def solve():\n    c = int(input())\n    max_sum = 0\n    d = 0\n    for i in range(1, c + 1):\n        b = a(int(e) for e in str(i))\n        if b > max_sum or b == max_sum and i > d:\n            max_sum = b\n            d = i\n    print(d)\n\n\nsolve()\n",
+        "detection_score": 0.5118203163146973,
+        "score_drop": 0.024543344974517822,
+        "score_drop_pct": 4.5758776639574945,
+        "metadata": {
+          "intensity": 5,
+          "type": "variable_rename"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "rename_all_8_vars",
+        "modified_code": "def solve():\n    c = int(input())\n    d = 0\n    h = 0\n    for b in range(1, c + 1):\n        f = a(int(e) for e in str(b))\n        if f > d or f == d and b > h:\n            d = f\n            h = b\n    print(h)\n\n\ng()\n",
+        "detection_score": 0.48966410756111145,
+        "score_drop": 0.04669955372810364,
+        "score_drop_pct": 8.706696053169523,
+        "metadata": {
+          "intensity": 8,
+          "type": "variable_rename"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "rename_functions",
+        "modified_code": "def solve():\n    x = int(input())\n    max_sum = 0\n    max_num = 0\n    for i in range(1, x + 1):\n        sum_digits = sum(int(digit) for digit in str(i))\n        if sum_digits > max_sum or (sum_digits == max_sum and i > max_num):\n            max_sum = sum_digits\n            max_num = i\n    print(max_num)\n\nsolve()",
+        "detection_score": 0.5363636612892151,
+        "score_drop": 0.0,
+        "score_drop_pct": 0.0,
+        "metadata": {
+          "intensity": 5,
+          "type": "function_rename"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "add_whitespace",
+        "modified_code": "def solve():\n\n    x = int(input())\n\n    max_sum = 0\n    max_num = 0\n    for i in range(1, x + 1):\n        sum_digits = sum(int(digit) for digit in str(i))\n        if sum_digits > max_sum or (sum_digits == max_sum and i > max_num):\n            max_sum = sum_digits\n\n            max_num = i\n    print(max_num)\n\n\nsolve()\n",
+        "detection_score": 0.5425425171852112,
+        "score_drop": -0.006178855895996094,
+        "score_drop_pct": -1.1519900287697462,
+        "metadata": {
+          "intensity": 3,
+          "type": "whitespace"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "remove_whitespace",
+        "modified_code": "def solve():\n    x = int(input())\n    max_sum = 0\n    max_num = 0\n    for i in range(1, x + 1):\n        sum_digits = sum(int(digit) for digit in str(i))\n        if sum_digits > max_sum or (sum_digits == max_sum and i > max_num):\n            max_sum = sum_digits\n            max_num = i\n    print(max_num)\nsolve()",
+        "detection_score": 0.5363636612892151,
+        "score_drop": 0.0,
+        "score_drop_pct": 0.0,
+        "metadata": {
+          "intensity": 3,
+          "type": "whitespace"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "add_comments",
+        "modified_code": "def solve():\n    x = int(input())\n    max_sum = 0\n    max_num = 0\n    for i in range(1, x + 1):\n        sum_digits = sum(int(digit) for digit in str(i))\n        if sum_digits > max_sum or (sum_digits == max_sum and i > max_num):\n            max_sum = sum_digits\n            max_num = i\n    print(max_num)\n\nsolve()",
+        "detection_score": 0.5363636612892151,
+        "score_drop": 0.0,
+        "score_drop_pct": 0.0,
+        "metadata": {
+          "intensity": 2,
+          "type": "comments"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "reformat_compact",
+        "modified_code": "def solve():\n    x = int(input())\n    max_sum = 0\n    max_num = 0\n    for i in range(1, x + 1):\n        sum_digits = sum(int(digit) for digit in str(i))\n        if sum_digits > max_sum or sum_digits == max_sum and i > max_num:\n            max_sum = sum_digits\n            max_num = i\n    print(max_num)\n\nsolve()\n",
+        "detection_score": 0.5333333611488342,
+        "score_drop": 0.0030303001403808594,
+        "score_drop_pct": 0.5649711863583684,
+        "metadata": {
+          "intensity": 2,
+          "type": "formatting"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "combined_light",
+        "modified_code": "def solve():\n    x = int(input())\n    max_sum = 0\n    var_4127 = 0\n    for var_3079 in range(1, x + 1):\n        sum_digits = var_1682(int(digit) for digit in str(var_3079))\n        if (sum_digits > max_sum or sum_digits == max_sum and var_3079 >\n            var_4127):\n    # Variable initialization\n            max_sum = sum_digits\n            var_4127 = var_3079\n    print(var_4127)\n\n\n    # Variable initialization\nsolve()\n",
+        "detection_score": 0.5041666626930237,
+        "score_drop": 0.032196998596191406,
+        "score_drop_pct": 6.002829967787529,
+        "metadata": {
+          "intensity": 4,
+          "type": "combined"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "combined_medium",
+        "modified_code": "def solve():\n    var_9404 = int(input())\n    var_8625 = 0\n    var_2669 = 0\n    for var_4915 in range(1, var_9404 + 1):\n        var_3229 = var_7966(int(var_1033) for var_1033 in str(var_4915))\n    # Variable initialization\n        if var_3229 > var_8625 or var_3229 == var_8625 and var_4915 > var_2669:\n            var_8625 = var_3229\n            var_2669 = var_4915\n    # Calculate result\n    print(var_2669)\n\n\nvar_1682()\n    # Variable initialization\n",
+        "detection_score": 0.4965771436691284,
+        "score_drop": 0.03978651762008667,
+        "score_drop_pct": 7.417824974282365,
+        "metadata": {
+          "intensity": 6,
+          "type": "combined"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "combined_heavy",
+        "modified_code": "def solve():\n    var_4380 = int(input())\n    var_8350 = 0\n    var_4799 = 0\n    for var_7306 in range(1, var_4380 + 1):\n        var_2925 = var_9465(int(var_2161) for var_2161 in str(var_7306))\n        if var_2925 > var_8350 or var_2925 == var_8350 and var_7306 > var_4799:\n            var_8350 = var_2925\n            var_4799 = var_7306\n    print(var_4799)\n\nvar_4046()\n",
+        "detection_score": 0.5045351386070251,
+        "score_drop": 0.03182852268218994,
+        "score_drop_pct": 5.934131071759452,
+        "metadata": {
+          "intensity": 9,
+          "type": "combined"
+        },
+        "watermark_detected": true
+      }
+    ],
+    "analysis": {
+      "breaking_point_attack": "rename_all_8_vars",
+      "breaking_point_intensity": 8,
+      "breaking_point_score": 0.48966410756111145,
+      "all_rename_results": [
+        {
+          "num_renames": 1,
+          "score": 0.5363636612892151,
+          "detected": true
+        },
+        {
+          "num_renames": 5,
+          "score": 0.5118203163146973,
+          "detected": true
+        },
+        {
+          "num_renames": 8,
+          "score": 0.48966410756111145,
+          "detected": false
+        }
+      ]
+    }
+  },
+  {
+    "problem_id": 2,
+    "ngram_len": "None",
+    "original_code": "def solve():\n    current_year = int(input())\n\n    def is_lucky(year):\n        non_zero_count = 0\n        for digit in str(year):\n            if digit != '0':\n                non_zero_count += 1\n        return non_zero_count <= 1\n\n    next_lucky_year = current_year + 1\n    while not is_lucky(next_lucky_year):\n        next_lucky_year += 1\n\n    print(next_lucky_year - current_year)\n\n\nsolve()",
+    "original_score": 0.4927140176296234,
+    "attacks": [
+      {
+        "attack_name": "baseline",
+        "modified_code": "def solve():\n    current_year = int(input())\n\n    def is_lucky(year):\n        non_zero_count = 0\n        for digit in str(year):\n            if digit != '0':\n                non_zero_count += 1\n        return non_zero_count <= 1\n\n    next_lucky_year = current_year + 1\n    while not is_lucky(next_lucky_year):\n        next_lucky_year += 1\n\n    print(next_lucky_year - current_year)\n\n\nsolve()",
+        "detection_score": 0.4927140176296234,
+        "score_drop": 0.0,
+        "score_drop_pct": 0.0,
+        "metadata": {
+          "intensity": 0
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "rename_1_vars",
+        "modified_code": "def solve():\n    current_year = int(input())\n\n    def is_lucky(year):\n        non_zero_count = 0\n        for a in str(year):\n            if a != '0':\n                non_zero_count += 1\n        return non_zero_count <= 1\n    next_lucky_year = current_year + 1\n    while not is_lucky(next_lucky_year):\n        next_lucky_year += 1\n    print(next_lucky_year - current_year)\n\n\nsolve()\n",
+        "detection_score": 0.4941282868385315,
+        "score_drop": -0.001414269208908081,
+        "score_drop_pct": -0.2870365279461558,
+        "metadata": {
+          "intensity": 1,
+          "type": "variable_rename"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "rename_5_vars",
+        "modified_code": "def solve():\n    current_year = int(input())\n\n    def is_lucky(year):\n        d = 0\n        for a in str(c):\n            if a != '0':\n                d += 1\n        return d <= 1\n    b = current_year + 1\n    while not e(b):\n        b += 1\n    print(b - current_year)\n\n\nsolve()\n",
+        "detection_score": 0.5077658295631409,
+        "score_drop": -0.015051811933517456,
+        "score_drop_pct": -3.0548779606331413,
+        "metadata": {
+          "intensity": 5,
+          "type": "variable_rename"
+        },
+        "watermark_detected": true
+      },
+      {
+        "attack_name": "rename_all_7_vars",
+        "modified_code": "def solve():\n    b = int(input())\n\n    def is_lucky(year):\n        d = 0\n        for c in str(g):\n            if c != '0':\n                d += 1\n        return d <= 1\n    a = b + 1\n    while not f(a):\n        a += 1\n    print(a - b)\n\n\ne()\n",
+        "detection_score": 0.49936142563819885,
+        "score_drop": -0.0066474080085754395,
+        "score_drop_pct": -1.3491412402990213,
+        "metadata": {
+          "intensity": 7,
+          "type": "variable_rename"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "rename_functions",
+        "modified_code": "def solve():\n    current_year = int(input())\n\n    def func_0(year):\n        non_zero_count = 0\n        for digit in str(year):\n            if digit != '0':\n                non_zero_count += 1\n        return non_zero_count <= 1\n    next_lucky_year = current_year + 1\n    while not func_0(next_lucky_year):\n        next_lucky_year += 1\n    print(next_lucky_year - current_year)\n\n\nsolve()\n",
+        "detection_score": 0.49322494864463806,
+        "score_drop": -0.0005109310150146484,
+        "score_drop_pct": -0.10369727605329038,
+        "metadata": {
+          "intensity": 5,
+          "type": "function_rename"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "add_whitespace",
+        "modified_code": "def solve():\n    current_year = int(input())\n\n\n    def is_lucky(year):\n        non_zero_count = 0\n\n        for digit in str(year):\n            if digit != '0':\n                non_zero_count += 1\n\n        return non_zero_count <= 1\n\n    next_lucky_year = current_year + 1\n    while not is_lucky(next_lucky_year):\n        next_lucky_year += 1\n\n    print(next_lucky_year - current_year)\n\n\nsolve()",
+        "detection_score": 0.49180328845977783,
+        "score_drop": 0.0009107291698455811,
+        "score_drop_pct": 0.1848393058161748,
+        "metadata": {
+          "intensity": 3,
+          "type": "whitespace"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "remove_whitespace",
+        "modified_code": "def solve():\n    current_year = int(input())\n    def is_lucky(year):\n        non_zero_count = 0\n        for digit in str(year):\n            if digit != '0':\n                non_zero_count += 1\n        return non_zero_count <= 1\n    next_lucky_year = current_year + 1\n    while not is_lucky(next_lucky_year):\n        next_lucky_year += 1\n    print(next_lucky_year - current_year)\nsolve()",
+        "detection_score": 0.48451730608940125,
+        "score_drop": 0.008196711540222168,
+        "score_drop_pct": 1.6635839953682205,
+        "metadata": {
+          "intensity": 3,
+          "type": "whitespace"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "add_comments",
+        "modified_code": "def solve():\n    current_year = int(input())\n\n    def is_lucky(year):\n        non_zero_count = 0\n        for digit in str(year):\n    # Variable initialization\n            if digit != '0':\n                non_zero_count += 1\n    # Helper function\n        return non_zero_count <= 1\n\n    # TODO: optimize\n    next_lucky_year = current_year + 1\n    while not is_lucky(next_lucky_year):\n        next_lucky_year += 1\n\n    print(next_lucky_year - current_year)\n\n\n    # TODO: optimize\nsolve()",
+        "detection_score": 0.49074074625968933,
+        "score_drop": 0.001973271369934082,
+        "score_drop_pct": 0.40049020310548666,
+        "metadata": {
+          "intensity": 2,
+          "type": "comments"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "reformat_compact",
+        "modified_code": "def solve():\n    current_year = int(input())\n    def is_lucky(year):\n        non_zero_count = 0\n        for digit in str(year):\n            if digit != '0':\n                non_zero_count += 1\n        return non_zero_count <= 1\n    next_lucky_year = current_year + 1\n    while not is_lucky(next_lucky_year):\n        next_lucky_year += 1\n    print(next_lucky_year - current_year)\n\nsolve()\n",
+        "detection_score": 0.4878048896789551,
+        "score_drop": 0.004909127950668335,
+        "score_drop_pct": 0.9963442839084317,
+        "metadata": {
+          "intensity": 2,
+          "type": "formatting"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "combined_light",
+        "modified_code": "def solve():\n    var_6451 = int(input())\n\n    def is_lucky(year):\n        var_2090 = 0\n        for digit in str(year):\n    # Processing data\n            if digit != '0':\n    # TODO: optimize\n                var_2090 += 1\n        return var_2090 <= 1\n    var_8836 = var_6451 + 1\n    while not is_lucky(var_8836):\n        var_8836 += 1\n    print(var_8836 - var_6451)\n\n\nsolve()\n    # Helper function\n",
+        "detection_score": 0.48745518922805786,
+        "score_drop": 0.005258828401565552,
+        "score_drop_pct": 1.0673186094572713,
+        "metadata": {
+          "intensity": 4,
+          "type": "combined"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "combined_medium",
+        "modified_code": "def solve():\n    var_7167 = int(input())\n\n    # Processing data\n    def func_0(year):\n        var_7167 = 0\n        for var_6935 in str(var_9195):\n            if var_6935 != '0':\n                var_7167 += 1\n    # TODO: optimize\n        return var_7167 <= 1\n    var_7809 = var_7167 + 1\n    while not var_3354(var_7809):\n        var_7809 += 1\n    print(var_7809 - var_7167)\n\n\nvar_8642()\n",
+        "detection_score": 0.4971098303794861,
+        "score_drop": -0.004395812749862671,
+        "score_drop_pct": -0.8921631194927834,
+        "metadata": {
+          "intensity": 6,
+          "type": "combined"
+        },
+        "watermark_detected": false
+      },
+      {
+        "attack_name": "combined_heavy",
+        "modified_code": "def solve():\n    var_4929 = int(input())\n    def func_0(year):\n        var_9360 = 0\n        for var_7663 in str(var_9393):\n            if var_7663 != '0':\n                var_9360 += 1\n        return var_9360 <= 1\n    var_4014 = var_4929 + 1\n    while not var_9571(var_4014):\n        var_4014 += 1\n    print(var_4014 - var_4929)\n\nvar_9125()\n",
+        "detection_score": 0.5205761194229126,
+        "score_drop": -0.027862101793289185,
+        "score_drop_pct": -5.654822228791007,
+        "metadata": {
+          "intensity": 9,
+          "type": "combined"
+        },
+        "watermark_detected": true
+      }
+    ],
+    "analysis": {
+      "breaking_point_attack": "rename_1_vars",
+      "breaking_point_intensity": 1,
+      "breaking_point_score": 0.4941282868385315,
+      "all_rename_results": [
+        {
+          "num_renames": 1,
+          "score": 0.4941282868385315,
+          "detected": false
+        },
+        {
+          "num_renames": 5,
+          "score": 0.5077658295631409,
+          "detected": true
+        },
+        {
+          "num_renames": 7,
+          "score": 0.49936142563819885,
+          "detected": false
+        }
+      ]
+    }
+  }
+]
