@@ -122,10 +122,79 @@ def tf_idf_calculator(corpus):
     return tfidf_results
 
 
-corpus = []
+# corpus = []
 
-jsonObj = pd.read_json(path_or_buf="human_eval.jsonl", lines=True)
-corpus.append(" ".join(jsonObj["watermarked_model_response"].astype(str).str.lower().tolist()))
-corpus.append(" ".join(jsonObj["unwatermarked_model_response"].astype(str).str.lower().tolist()))
+# jsonObj = pd.read_json(path_or_buf="human_eval.jsonl", lines=True)
+# corpus.append(" ".join(jsonObj["watermarked_model_response"].astype(str).str.lower().tolist()))
+# corpus.append(" ".join(jsonObj["unwatermarked_model_response"].astype(str).str.lower().tolist()))
 
-print(tf_idf_calculator(corpus))
+# tf_idf_results = tf_idf_calculator(corpus)
+
+# df_results = pd.DataFrame(tf_idf_results).T
+# df_results.columns = ["watermarked_tfidf", "unwatermarked_tfidf"]
+# df_results.fillna(0, inplace=True)
+# df_results.index.name = 'word'
+
+# output_filepath = "tfidf_results.csv"
+# df_results.to_csv(output_filepath)
+
+
+### Plotting
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+try:
+    df = pd.read_csv("tfidf_results.csv", index_col='word')
+except FileNotFoundError:
+    print("Error: 'tfidf_results.csv' not found. Please ensure the file was generated in the previous step.")
+    exit()
+
+df['total_tfidf'] = df['watermarked_tfidf'] + df['unwatermarked_tfidf']
+
+df_filtered = df[df['total_tfidf'] > 0]
+
+df_sorted = df_filtered.sort_values(by='total_tfidf', ascending=False)
+
+N = 50
+df_plot = df_sorted.head(N)
+
+df_plot = df_plot.sort_values(by='total_tfidf', ascending=True)
+
+
+if not df_plot.empty:
+    fig, ax = plt.subplots(figsize=(10, len(df_plot) * 0.7))
+
+    bar_width = 0.35
+    words = df_plot.index
+    y_pos = range(len(words))
+
+    ax.barh(
+        [p - bar_width/2 for p in y_pos],
+        df_plot['watermarked_tfidf'],
+        bar_width,
+        label='Watermarked',
+        color='skyblue'
+    )
+
+    ax.barh(
+        [p + bar_width/2 for p in y_pos],
+        df_plot['unwatermarked_tfidf'],
+        bar_width,
+        label='Unwatermarked',
+        color='lightcoral'
+    )
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(words)
+
+    ax.set_xlabel('TF-IDF Score')
+    ax.set_title(f'Top {N} Word TF-IDF Scores Comparison')
+    ax.legend(loc='lower right')
+    plt.tight_layout()
+
+    plt.savefig("tfidf_top_n_comparison_plot.png")
+
+    print(f"Plot saved to tfidf_top_n_comparison_plot.png showing top {N} words.")
+else:
+    print(f"No words found with a non-zero TF-IDF score to plot for the top {N}.")
