@@ -137,12 +137,65 @@ This will:
 ]
 ```
 
+## Detecting Watermarks in Custom Code
+
+### Quick Start
+
+To check if a Python code string is watermarked:
+
+```python
+from src.detector_utils import detect_watermark
+
+code = """
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+"""
+
+is_watermarked = detect_watermark(code, ngram_len=5, threshold=0.5)
+print(f"Watermarked: {is_watermarked}")
+```
+
+### Advanced Usage
+
+For better performance when checking multiple samples:
+
+```python
+from src.detector_utils import WatermarkDetector
+
+# Create detector instance (reusable)
+detector = WatermarkDetector(ngram_len=5)
+
+# Check code
+result = detector.detect(code, threshold=0.5)
+print(f"Score: {result['score']:.4f}")
+print(f"Watermarked: {result['is_watermarked']}")
+print(f"Confidence: {result['confidence']}")
+```
+
+### API Reference
+
+**`detect_watermark(code, ngram_len=5, threshold=0.5) -> bool`**
+- Simple function to check if code is watermarked
+- Returns `True` if watermarked, `False` otherwise
+
+**`WatermarkDetector(ngram_len=5)`**
+- Class for efficient multiple detections
+- Methods:
+  - `is_watermarked(code, threshold=0.5) -> bool`
+  - `get_score(code) -> float` - Returns score 0-1
+  - `detect(code, threshold=0.5) -> dict` - Detailed results
+
+**Example:** Run `python scripts/example_detection.py` for interactive demos.
+
 ## Project Structure
 
 ```
 code-watermarking/
 ├── src/                          # Core source code
 │   ├── bayesian_detector.py      # Bayesian detector implementation
+│   ├── detector_utils.py         # Simple detection API
 │   ├── model_utils.py            # Model loading and generation utilities
 │   ├── execution_utils.py        # Safe code execution
 │   └── report_generator.py       # HTML report generation
@@ -150,6 +203,7 @@ code-watermarking/
 │   ├── pipeline.py               # Main evaluation pipeline
 │   ├── train_bayesian_detector.py # Detector training script
 │   ├── visualize_results.py      # Visualization script
+│   ├── example_detection.py      # Detection usage examples
 │   ├── score_test_results.py     # Score test results
 │   ├── test_samples.py           # Test sample scoring
 │   ├── demo_detector.py          # Detector demo
