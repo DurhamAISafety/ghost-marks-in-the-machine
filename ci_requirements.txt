@@ -11,5 +11,5 @@ python-dotenv
 flax
 # optax
 # scikit-learn
-# jaxtyping
+jaxtyping
 
