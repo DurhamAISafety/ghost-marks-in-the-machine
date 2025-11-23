@@ -10,6 +10,6 @@ python-dotenv
 # jaxlib
 flax
 # optax
-# scikit-learn
+scikit-learn
 jaxtyping
 
