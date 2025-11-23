@@ -1,8 +1,8 @@
 torch
-transformers
-git+https://github.com/google-deepmind/synthid-text.git
+transformers>=4.46.0
 accelerate
 datasets
 pandas
 python-dotenv
 jinja2>=3.1.0
+astor
