@@ -8,7 +8,7 @@ python-dotenv
 
 # jax
 # jaxlib
-# flax
+flax
 # optax
 # scikit-learn
 # jaxtyping
