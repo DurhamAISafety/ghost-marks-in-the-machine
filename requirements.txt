@@ -1,5 +1,5 @@
 torch
-transformers>=4.46.0
+transformers
 accelerate
 datasets<3.0.0
 pandas
