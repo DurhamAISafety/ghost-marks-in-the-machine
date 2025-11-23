@@ -1,8 +1,14 @@
 import pickle
 import io
 import torch
+import json
 import sys
-from bayesian_detector import BayesianDetector
+from pathlib import Path
+
+# Add parent directory to path for src imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.bayesian_detector import BayesianDetector
 
 # CPU Unpickler for loading CUDA-trained models on CPU
 class CPU_Unpickler(pickle.Unpickler):
@@ -25,12 +31,12 @@ def load_detector(path):
 def main():
     # Check for available detectors
     import os
-    if os.path.exists("bayesian_detector_ngram5.pkl"):
-        detector_path = "bayesian_detector_ngram5.pkl"
-    elif os.path.exists("bayesian_detector_ngram2.pkl"):
-        detector_path = "bayesian_detector_ngram2.pkl"
+    if os.path.exists("outputs/models/bayesian_detector_ngram5.pkl"):
+        detector_path = "outputs/models/bayesian_detector_ngram5.pkl"
+    elif os.path.exists("outputs/models/bayesian_detector_ngram2.pkl"):
+        detector_path = "outputs/models/bayesian_detector_ngram2.pkl"
     else:
-        print("Error: No detector files found (bayesian_detector_ngram*.pkl).")
+        print("Error: No detector files found (outputs/models/bayesian_detector_ngram*.pkl).")
         return
 
     try:

@@ -1,11 +1,16 @@
 import json
-import pickle
-import io
-import torch
-import sys
-import os
 import numpy as np
-from bayesian_detector import BayesianDetector
+import pickle
+import torch
+import io
+import sys
+from pathlib import Path
+from transformers import AutoTokenizer, SynthIDTextWatermarkLogitsProcessor
+
+# Add parent directory to path for src imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.bayesian_detector import BayesianDetector
 
 # CPU Unpickler for loading CUDA-trained models on CPU
 class CPU_Unpickler(pickle.Unpickler):
@@ -15,7 +20,7 @@ class CPU_Unpickler(pickle.Unpickler):
         return super().find_class(module, name)
 
 def load_detector(ngram_len):
-    path = f"bayesian_detector_ngram{ngram_len}.pkl"
+    path = f"outputs/models/bayesian_detector_ngram{ngram_len}.pkl"
     print(f"Loading detector from {path}...")
     if not os.path.exists(path):
         print(f"Error: {path} not found.")
@@ -48,10 +53,10 @@ def main():
         return
 
     try:
-        with open("test_results.json", "r") as f:
+        with open("outputs/results/test_results.json", "r") as f:
             data = json.load(f)
     except FileNotFoundError:
-        print("Error: test_results.json not found.")
+        print("Error: outputs/results/test_results.json not found.")
         return
 
     # Store scores: scores[detector_ngram][data_type] = []

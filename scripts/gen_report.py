@@ -1,10 +1,16 @@
 import json
 import os
-from report_generator import generate_html_report
+import sys
+from pathlib import Path
+
+# Add parent directory to path for src imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.report_generator import generate_html_report
 
 def main():
-    input_file = "results.json"
-    output_file = "report.html"
+    input_file = "outputs/results/results.json"
+    output_file = "outputs/reports/report.html"
     
     if not os.path.exists(input_file):
         print(f"Error: {input_file} not found.")

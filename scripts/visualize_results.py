@@ -1,14 +1,19 @@
 import json
 import pickle
 import io
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 import torch
 import sys
-import os
-import numpy as np
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-from bayesian_detector import BayesianDetector
+from pathlib import Path
+from collections import defaultdict
+from transformers import AutoTokenizer, SynthIDTextWatermarkLogitsProcessor
+
+# Add parent directory to path for src imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.bayesian_detector import BayesianDetector
 
 # CPU Unpickler for loading CUDA-trained models on CPU
 class CPU_Unpickler(pickle.Unpickler):
@@ -18,7 +23,7 @@ class CPU_Unpickler(pickle.Unpickler):
         return super().find_class(module, name)
 
 def load_detector(ngram_len):
-    path = f"bayesian_detector_ngram{ngram_len}.pkl"
+    path = f"outputs/models/bayesian_detector_ngram{ngram_len}.pkl"
     print(f"Loading detector from {path}...")
     if not os.path.exists(path):
         print(f"Error: {path} not found.")
@@ -53,10 +58,10 @@ def main():
         return
 
     try:
-        with open("test_results.json", "r") as f:
+        with open("outputs/results/test_results.json", "r") as f:
             data = json.load(f)
     except FileNotFoundError:
-        print("Error: test_results.json not found.")
+        print("Error: outputs/results/test_results.json not found.")
         return
 
     records = []
@@ -121,8 +126,8 @@ def main():
     sns.boxplot(data=df, x='Detector', y='Score', hue='Type', palette="Set2")
     plt.title('Overall Detector Performance: Watermarked vs Unwatermarked')
     plt.ylim(-0.05, 1.05)
-    plt.savefig('detector_performance_overall.png')
-    print("Saved detector_performance_overall.png")
+    plt.savefig('outputs/reports/detector_performance_overall.png')
+    print("Saved outputs/reports/detector_performance_overall.png")
     plt.close()
 
     # Plot 2: Performance by Status
@@ -142,8 +147,8 @@ def main():
     g.fig.subplots_adjust(top=0.85)
     g.fig.suptitle('Detector Performance by Code Response Type')
     g.set(ylim=(-0.05, 1.05))
-    plt.savefig('detector_performance_by_status.png')
-    print("Saved detector_performance_by_status.png")
+    plt.savefig('outputs/reports/detector_performance_by_status.png')
+    print("Saved outputs/reports/detector_performance_by_status.png")
     plt.close()
 
 if __name__ == "__main__":

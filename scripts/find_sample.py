@@ -1,7 +1,8 @@
 import json
 
-def find_samples():
-    with open("results.json", "r") as f:
+def main():
+    # Load results.json
+    with open("outputs/results/results.json", "r") as f:
         data = json.load(f)
     
     for problem in data:

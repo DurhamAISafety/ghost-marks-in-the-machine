@@ -1,8 +1,14 @@
+import json
 import pickle
-import io
 import torch
 import sys
-from bayesian_detector import BayesianDetector
+from pathlib import Path
+from transformers import AutoTokenizer
+
+# Add parent directory to path for src imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.bayesian_detector import BayesianDetector
 
 # CPU Unpickler for loading CUDA-trained models on CPU
 class CPU_Unpickler(pickle.Unpickler):
@@ -37,7 +43,7 @@ def score_code(detector, code, label):
         print(f"Error during scoring: {e}")
 
 def main():
-    detector_path = "bayesian_detector_ngram5.pkl"
+    detector_path = "outputs/models/bayesian_detector_ngram5.pkl"
     
     try:
         detector = load_detector(detector_path)

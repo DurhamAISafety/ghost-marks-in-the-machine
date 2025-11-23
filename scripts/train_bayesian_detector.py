@@ -12,15 +12,21 @@ import numpy as np
 import argparse
 import pickle
 import io
+import sys
+from pathlib import Path
 from transformers import AutoTokenizer
 from transformers import SynthIDTextWatermarkLogitsProcessor
-from bayesian_detector import BayesianDetector
+
+# Add parent directory to path for src imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.bayesian_detector import BayesianDetector
 
 # Configuration
 MODEL_NAME = "google/codegemma-7b-it"
 WATERMARK_KEYS = [101, 202, 303, 404, 505, 606, 707, 808, 909]
-RESULTS_FILE = "results.json"
-DETECTOR_SAVE_PATH = "bayesian_detector.pkl"
+RESULTS_FILE = "outputs/results/results.json"
+DETECTOR_SAVE_PATH = "outputs/models/bayesian_detector.pkl"
 
 
 def load_and_prepare_data(results_file):
@@ -125,7 +131,7 @@ def train_detector_for_ngram(ngram_len, watermarked_codes, unwatermarked_codes, 
     print(f"Minimum validation loss: {min_loss:.4f}")
     
     # Save detector
-    save_path = f"bayesian_detector_ngram{ngram_len}.pkl"
+    save_path = f"outputs/models/bayesian_detector_ngram{ngram_len}.pkl"
     print(f"\n=== Saving Detector ===")
     with open(save_path, 'wb') as f:
         pickle.dump({
@@ -184,7 +190,7 @@ def score_samples(detectors=None):
         print(f"Loading detectors...")
         detectors = {}
         for ngram_len in [2, 5, 10]:
-            detector_path = f"bayesian_detector_ngram{ngram_len}.pkl"
+            detector_path = f"outputs/models/bayesian_detector_ngram{ngram_len}.pkl"
             try:
                 with open(detector_path, 'rb') as f:
                     try:
@@ -267,7 +273,7 @@ def score_samples(detectors=None):
             print(f"Watermarked (ngram={ngram}): Mean={np.mean(ngram_scores):.4f}, Std={np.std(ngram_scores):.4f}")
     
     # Save scores
-    scores_file = "bayesian_scores.json"
+    scores_file = "outputs/results/bayesian_scores.json"
     with open(scores_file, 'w') as f:
         json.dump(all_scores, f, indent=2)
     print(f"\nScores saved to {scores_file}")

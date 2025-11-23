@@ -3,14 +3,19 @@
 import multiprocessing
 import json
 import os
+import sys
+from pathlib import Path
 from dotenv import load_dotenv
 from huggingface_hub import login
 from transformers import SynthIDTextWatermarkLogitsProcessor
 
+# Add parent directory to path for src imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 # Import custom modules
-from model_utils import load_model_and_tokenizer, generate_code, compute_g_score, WATERMARK_KEYS
-from execution_utils import run_code_safely
-from report_generator import generate_html_report
+from src.model_utils import load_model_and_tokenizer, generate_code, compute_g_score, WATERMARK_KEYS
+from src.execution_utils import run_code_safely
+from src.report_generator import generate_html_report
 
 # Load environment variables
 load_dotenv()
@@ -140,14 +145,14 @@ def main():
                 json.dump(all_results, f, indent=2)
     
     # Save to JSON
-    output_json = "results.json"
+    output_json = "outputs/results/results.json"
     with open(output_json, "w") as f:
         json.dump(all_results, f, indent=2)
     print(f"\nResults saved to {output_json}")
     
     # Generate HTML Report
-    generate_html_report(all_results, "report.html")
-    print(f"Report saved to report.html")
+    generate_html_report(all_results, "outputs/reports/report.html")
+    print(f"Report saved to outputs/reports/report.html")
 
 if __name__ == "__main__":
     try:
