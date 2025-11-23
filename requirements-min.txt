@@ -1,0 +1,19 @@
+# Minimal dependencies required to run watermark detection (test_interactive.py)
+# Includes additional libraries needed because the pickled model imports them.
+# NOTE: You ALSO need the external 'synthid_text' package (editable install) which
+# provides logits processing used by the detector. Clone its source and install with:
+#   pip install -e /path/to/synthid-text --no-deps
+
+torch
+transformers
+huggingface_hub
+python-dotenv
+numpy<2  # ensure torch compatibility
+
+# Required by bayesian_detector imports / model unpickling
+flax
+jax
+jaxlib
+optax
+jaxtyping
+scikit-learn

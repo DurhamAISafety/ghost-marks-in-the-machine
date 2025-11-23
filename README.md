@@ -165,6 +165,24 @@ print(f"Confidence: {result['confidence']}")
 
 **Note:** The detector automatically loads your `HF_TOKEN` from `.env` for authentication.
 
+### Web Interface
+
+Launch the interactive web application:
+
+```bash
+python web_app.py
+```
+
+Then open http://localhost:5000 in your browser.
+
+**Features:**
+- 🎨 Beautiful dark theme interface
+- ✨ Real-time watermark detection
+- 🎚️ Adjustable detection threshold
+- 📊 Visual score display with progress bar
+- 💾 Example code snippets
+- 📱 Responsive design
+
 ### Advanced Usage
 
 For better performance when checking multiple samples:
