@@ -1,5 +1,5 @@
-torch
-transformers
+# torch
+transformers==4.57.1
 # accelerate
 # datasets<3.0.0
 # pandas
