@@ -29,7 +29,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           # Add any dependencies your test function needs:
-          pip install -r requirements.txt
+          pip install -r ci_cd_pipeline/ci_requirements.txt
       
       - name: Get changed files
         id: changed-files
