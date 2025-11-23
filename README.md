@@ -144,8 +144,12 @@ This will:
 To check if a Python code string is watermarked:
 
 ```python
-from src.detector_utils import detect_watermark
+from src.detector_utils import WatermarkDetector
 
+# Create detector (automatically uses HF_TOKEN from .env)
+detector = WatermarkDetector(ngram_len=5)
+
+# Test some code
 code = """
 def fibonacci(n):
     if n <= 1:
@@ -153,9 +157,13 @@ def fibonacci(n):
     return fibonacci(n-1) + fibonacci(n-2)
 """
 
-is_watermarked = detect_watermark(code, ngram_len=5, threshold=0.5)
-print(f"Watermarked: {is_watermarked}")
+result = detector.detect(code, threshold=0.5)
+print(f"Watermarked: {result['is_watermarked']}")
+print(f"Score: {result['score']:.4f}")
+print(f"Confidence: {result['confidence']}")
 ```
+
+**Note:** The detector automatically loads your `HF_TOKEN` from `.env` for authentication.
 
 ### Advanced Usage
 
