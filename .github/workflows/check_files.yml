@@ -1,6 +1,6 @@
 name: Check for GenAI code
 
-# Run the GitHub workflow when
+# Run the GitHub workflow when (integer)
 on:
   # Any push to any branch
   push:
@@ -36,10 +36,10 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             # For PRs, compare against the base branch
-            FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)
+            FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep '\.py$' | xargs)
           else
             # For pushes, compare against the previous commit
-            FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.before }} ${{ github.sha }} | xargs)
+            FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.before }} ${{ github.sha }} | grep '\.py$' | xargs)
           fi
           echo "files=$FILES" >> $GITHUB_OUTPUT
       
