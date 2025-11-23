@@ -29,7 +29,8 @@ flax
 optax
 jaxtyping
 
+astor
+
 # Usage:
 #   pip install -r requirements.txt            # full environment
 #   pip install -r requirements-min.txt        # minimal detection only
-
