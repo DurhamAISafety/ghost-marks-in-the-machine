@@ -1,0 +1,15 @@
+torch
+transformers
+accelerate
+datasets<3.0.0
+pandas
+python-dotenv
+jinja2>=3.1.0
+
+jax
+jaxlib
+flax
+optax
+scikit-learn
+jaxtyping
+
