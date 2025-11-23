@@ -787,7 +787,7 @@ class BayesianDetector:
     # Process both train and CV data for training
     wm_masks_train, wm_g_values_train = process_outputs_for_training(
         [
-            torch.tensor(outputs, device=torch_device, dtype=torch.long)
+            torch.tensor(outputs, device=torch_device, dtype=torch.long).unsqueeze(0)
             for outputs in train_wm_outputs
         ],
         logits_processor=logits_processor,
@@ -801,7 +801,7 @@ class BayesianDetector:
     )
     wm_masks_cv, wm_g_values_cv = process_outputs_for_training(
         [
-            torch.tensor(outputs, device=torch_device, dtype=torch.long)
+            torch.tensor(outputs, device=torch_device, dtype=torch.long).unsqueeze(0)
             for outputs in cv_wm_outputs
         ],
         logits_processor=logits_processor,
@@ -815,7 +815,7 @@ class BayesianDetector:
     )
     uwm_masks_train, uwm_g_values_train = process_outputs_for_training(
         [
-            torch.tensor(outputs, device=torch_device, dtype=torch.long)
+            torch.tensor(outputs, device=torch_device, dtype=torch.long).unsqueeze(0)
             for outputs in train_uwm_outputs
         ],
         logits_processor=logits_processor,
@@ -829,7 +829,7 @@ class BayesianDetector:
     )
     uwm_masks_cv, uwm_g_values_cv = process_outputs_for_training(
         [
-            torch.tensor(outputs, device=torch_device, dtype=torch.long)
+            torch.tensor(outputs, device=torch_device, dtype=torch.long).unsqueeze(0)
             for outputs in cv_uwm_outputs
         ],
         logits_processor=logits_processor,

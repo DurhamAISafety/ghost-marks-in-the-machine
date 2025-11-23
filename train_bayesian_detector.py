@@ -11,6 +11,7 @@ import torch
 import numpy as np
 import argparse
 import pickle
+import io
 from transformers import AutoTokenizer
 from transformers import SynthIDTextWatermarkLogitsProcessor
 from bayesian_detector import BayesianDetector
@@ -169,6 +170,12 @@ def train_all_detectors(watermarked_by_ngram, unwatermarked_codes):
     return detectors
 
 
+class CPU_Unpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        if module == 'torch.storage' and name == '_load_from_bytes':
+            return lambda b: torch.load(io.BytesIO(b), map_location='cpu')
+        return super().find_class(module, name)
+
 def score_samples(detectors=None):
     """Score samples from results.json using the trained detectors."""
     
@@ -180,8 +187,18 @@ def score_samples(detectors=None):
             detector_path = f"bayesian_detector_ngram{ngram_len}.pkl"
             try:
                 with open(detector_path, 'rb') as f:
-                    saved_data = pickle.load(f)
+                    try:
+                        # Use custom unpickler to force CPU mapping
+                        saved_data = CPU_Unpickler(f).load()
+                    except Exception as e:
+                        print(f"  Error loading {detector_path}: {e}")
+                        continue
+                    
                     detectors[ngram_len] = saved_data['detector']
+                    # Force device to CPU to avoid CUDA errors when running on CPU
+                    if hasattr(detectors[ngram_len], 'logits_processor'):
+                        detectors[ngram_len].logits_processor.device = torch.device('cpu')
+                    
                     print(f"Loaded detector for ngram_len={ngram_len}")
             except FileNotFoundError:
                 print(f"Warning: Could not find detector for ngram_len={ngram_len}")
