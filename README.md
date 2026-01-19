@@ -1,5 +1,7 @@
 # Code Watermarking with SynthID
 
+Link to submission: https://apartresearch.com/project/ghost-marks-in-the-machine-a-critical-review-of-synthid-for-code-provenance-monitoring-ov2c
+
 This repository evaluates SynthID code watermarking on the APPS dataset and provides tools for training Bayesian detectors to identify watermarked code.
 
 ## Overview
