@@ -11,7 +11,7 @@ Evaluates SynthID code watermarking on the APPS dataset with Bayesian detectors 
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and setup
-git clone <repository-url>
+git clone https://github.com/DurhamAISafety/ghost-marks-in-the-machine.git
 cd ghost-marks-in-the-machine
 uv sync
 
