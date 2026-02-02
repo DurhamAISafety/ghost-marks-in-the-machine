@@ -1,0 +1,58 @@
+[project]
+name = "ghost-marks-in-the-machine"
+version = "0.1.0"
+description = "Watermark detection project for AI-generated text"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "torch<2.5",
+    "transformers",
+    "huggingface-hub",
+    "python-dotenv",
+    "numpy<2",
+    "scikit-learn",
+    "flask>=3.1.2",
+    "flask-cors>=6.0.2",
+]
+
+[project.optional-dependencies]
+jax = [
+    "flax",
+    "jax",
+    "jaxlib",
+    "optax",
+    "jaxtyping",
+]
+reporting = [
+    "jinja2>=3.1.0",
+    "pandas",
+]
+training = [
+    "accelerate",
+    "datasets<3.0.0",
+    "astor",
+]
+nlp = [
+    "click",
+    "matplotlib",
+    "nltk",
+    "seaborn",
+    "tqdm",
+]
+dev = [
+    "flax",
+    "jax",
+    "jaxlib",
+    "optax",
+    "jaxtyping",
+    "jinja2>=3.1.0",
+    "pandas",
+    "accelerate",
+    "datasets<3.0.0",
+    "astor",
+    "click",
+    "matplotlib",
+    "nltk",
+    "seaborn",
+    "tqdm",
+]
