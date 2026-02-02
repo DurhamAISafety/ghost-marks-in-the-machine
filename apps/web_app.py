@@ -11,13 +11,13 @@ import sys
 from pathlib import Path
 
 # Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.detector_utils import WatermarkDetector
 
 app = Flask(__name__, 
-            template_folder='web',
-            static_folder='web/static')
+            template_folder='web_interface',
+            static_folder='web_interface/static')
 CORS(app)
 
 # Initialize detector once at startup (more efficient)

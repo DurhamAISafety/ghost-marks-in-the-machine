@@ -6,10 +6,14 @@ IMPORTANT: This requires GPU to run. Use sample_code from a previous generation 
 """
 
 import json
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import torch
 from transformers import AutoTokenizer, SynthIDTextWatermarkLogitsProcessor
-from red_team_attacks import generate_attack_suite, AdversarialTransformer
-from model_utils import WATERMARK_KEYS, compute_g_score
+from tests.red_team_attacks import generate_attack_suite, AdversarialTransformer
+from src.model_utils import WATERMARK_KEYS, compute_g_score
 
 
 def load_watermarked_samples(json_path: str = "results.json", max_samples: int = 5):

@@ -24,10 +24,10 @@ uv sync --extra nlp           # NLP analysis tools
 
 ### Environment Setup
 
-Copy `.env.example` to `.env` and add your Hugging Face token:
+Copy `configs/.env.example` to `.env` and add your Hugging Face token:
 
 ```bash
-cp .env.example .env
+cp configs/.env.example .env
 # Edit .env and add your HF_TOKEN
 ```
 
@@ -80,7 +80,7 @@ print(f"Watermarked: {result['is_watermarked']}, Score: {result['score']:.4f}")
 ### Web Interface
 
 ```bash
-python web_app.py
+python apps/web_app.py
 ```
 
 Open http://localhost:5000 for an interactive UI with real-time detection.
@@ -110,7 +110,20 @@ Generates performance plots in `outputs/reports/`.
 - **G-score**: Fast statistical measure from token-level watermark signals
 - **Bayesian score**: Learned classifier trained on specific data, typically achieves better separation
 
+## Project Structure
 
+```
+ghost-marks-in-the-machine/
+├── src/                    # Core library modules
+├── scripts/                # Pipeline and utility scripts
+├── tests/                  # Test files and red team testing
+├── apps/                   # Web application
+│   ├── web_app.py
+│   └── web_interface/
+├── configs/                # Configuration files (.env.example)
+├── outputs/                # Generated outputs (models, reports, results)
+└── NLP/                    # Isolated NLP analysis (standalone)
+```
 
 ## References
 

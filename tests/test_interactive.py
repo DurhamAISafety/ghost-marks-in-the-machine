@@ -4,6 +4,10 @@ You can run this in VSCode's interactive window (Jupyter).
 """
 
 # %%
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from src.detector_utils import WatermarkDetector
 
 # %% 
