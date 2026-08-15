@@ -27,8 +27,8 @@ python scripts/visualize_results.py                 # plots into outputs/reports
 python apps/web_app.py                              # Flask UI on :5001 (falls back to a stub detector)
 ```
 
-**Tests are standalone scripts, not a pytest suite** — run directly, e.g.
-`python tests/run_red_team_tests.py`, `python tests/test_interactive.py`. No lint config.
+**No pytest suite** — the red-team runner and detection demos are standalone scripts, run directly:
+`python scripts/run_red_team_tests.py`, `python scripts/interactive_detection.py`. No lint config.
 
 Environment: `cp configs/.env.example .env` and set `HF_TOKEN` (gated CodeGemma access).
 

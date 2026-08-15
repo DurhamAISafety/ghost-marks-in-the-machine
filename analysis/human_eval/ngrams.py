@@ -149,8 +149,11 @@ def plot_minimal_labels_with_similar(df, n):
     plt.legend(loc='upper left')
     
     plt.tight_layout()
-    plt.savefig("ngram_labels_with_similar.png")
-    print("Saved plot to ngram_labels_with_similar.png")
+    import os
+    out = "outputs/analysis/human_eval/ngram_labels_with_similar.png"
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    plt.savefig(out)
+    print(f"Saved plot to {out}")
     plt.show()
 
 N_GRAM_SIZE = 1

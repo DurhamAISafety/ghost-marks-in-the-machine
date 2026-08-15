@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import torch
 from transformers import AutoTokenizer, SynthIDTextWatermarkLogitsProcessor
-from tests.red_team_attacks import generate_attack_suite, AdversarialTransformer
+from src.red_team.attacks import generate_attack_suite, AdversarialTransformer
 from src.model_utils import WATERMARK_KEYS, compute_g_score
 
 
@@ -170,7 +170,7 @@ def main():
 
     # Option 1: Load from previous results JSON
     if len(sys.argv) > 1 and sys.argv[1] == "--from-json":
-        json_file = sys.argv[2] if len(sys.argv) > 2 else "results.json"
+        json_file = sys.argv[2] if len(sys.argv) > 2 else "outputs/results/results.json"
         print(f"\nLoading watermarked samples from {json_file}...")
 
         try:
@@ -214,7 +214,8 @@ def main():
                 })
 
             # Save comprehensive results
-            output_file = "red_team_results.json"
+            output_file = "outputs/red_team_results.json"
+            Path(output_file).parent.mkdir(parents=True, exist_ok=True)
             with open(output_file, 'w') as f:
                 json.dump(all_test_results, f, indent=2)
             print(f"\n\nRed team results saved to {output_file}")
@@ -269,9 +270,11 @@ solve()
             'analysis': analysis
         }]
 
-        with open("red_team_results.json", 'w') as f:
+        out_path = "outputs/red_team_results.json"
+        Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+        with open(out_path, 'w') as f:
             json.dump(output, f, indent=2)
-        print(f"\nResults saved to red_team_results.json")
+        print(f"\nResults saved to {out_path}")
 
 
 if __name__ == "__main__":

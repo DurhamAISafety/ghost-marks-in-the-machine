@@ -215,6 +215,6 @@ __marimo__/
 outputs/models/*.pkl
 outputs/results/*.json
 outputs/reports/*.html
-NLP/**/*.jsonl
-NLP/**/*.csv
-NLP/**/results_partial.json
+# Large analysis input data (dropped in beside the analysis scripts, not committed)
+analysis/**/*.jsonl
+analysis/**/*.csv

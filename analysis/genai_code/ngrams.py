@@ -193,7 +193,9 @@ def plot_kgram_comparison(df, k_size, label_a, label_b):
     
     plt.tight_layout()
     # Save the plot with both n-gram sizes in the filename
-    filename = f"{k_size}gram_n{label_a}_vs_n{label_b}.png"
+    import os
+    os.makedirs("outputs/analysis/genai_code", exist_ok=True)
+    filename = f"outputs/analysis/genai_code/{k_size}gram_n{label_a}_vs_n{label_b}.png"
     plt.savefig(filename)
     print(f"Saved plot to {filename}")
     plt.close() # Close plot to free memory

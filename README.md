@@ -122,8 +122,8 @@ Generates performance plots in `outputs/reports/`.
 ```
 ghost-marks-in-the-machine/
 ├── src/                    # Core library modules
-├── scripts/                # Pipeline and utility scripts
-├── tests/                  # Test files and red team testing
+│   └── red_team/           # Adversarial attack transforms (importable)
+├── scripts/                # Pipeline, runners, and demo scripts
 ├── apps/                   # Web application
 │   ├── web_app.py
 │   └── web_interface/
