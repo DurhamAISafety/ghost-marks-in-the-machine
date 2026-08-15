@@ -47,8 +47,10 @@ conflicts = [
 #   at runtime under torch<2.5 (it doesn't declare the bound), and the detection fork
 #   is stuck at torch==2.4.0 via synthid-text. Both forks therefore run transformers 4.x.
 # - synthid-text pulls jax[cuda] -> jax-cuda12-plugin, Linux-only wheels that break
-#   `uv sync --extra detection` on macOS. Gate to Linux; jax runs CPU without it.
+#   `uv sync --extra detection` on macOS. Gate to Linux (jax runs CPU without it there)
+#   AND pin ==0.5.3 to match jaxlib 0.5.3 — an unpinned override resolves 0.11.0, which
+#   jaxlib rejects ("not compatible ... will not be used"), silently forcing CPU on GPU.
 override-dependencies = [
     "transformers>=4.46,<5",
-    "jax-cuda12-plugin; sys_platform == 'linux'",
+    "jax-cuda12-plugin==0.5.3; sys_platform == 'linux'",
 ]
