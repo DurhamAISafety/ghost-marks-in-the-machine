@@ -10,11 +10,12 @@ detectors classifying watermarked vs. unwatermarked code. APPS dataset, CodeGemm
 
 ## Commands
 
-```bash
-uv sync                         # base install
-uv sync --extra dev             # everything (jax + training + reporting + nlp)
-uv sync --extra training        # generation/training only (accelerate, datasets, astor)
-uv sync --extra jax             # needed to load/train Bayesian detectors (flax/jax/optax)
+# Generation and detection are MUTUALLY EXCLUSIVE extras (see pyproject [tool.uv] conflicts):
+# synthid-text hard-pins torch==2.4.0, so anything loading/training detectors is stuck there,
+# while generation is free to run modern torch. Sync one OR the other, never both.
+uv sync --extra generation      # CodeGemma generation + g-score: modern torch + transformers 4.x
+uv sync --extra detection       # load/train/score Bayesian detectors: synthid-text -> torch 2.4.0
+uv sync --extra dev             # generation + reporting + nlp (generation-side; excludes detection)
 
 # Generation + g-score + execution over APPS (GPU, large memory; needs HF_TOKEN in .env)
 python scripts/pipeline.py                          # -> outputs/results/results.json, report.html
