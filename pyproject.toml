@@ -5,8 +5,6 @@ description = "Watermark detection project for AI-generated text"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "torch",
-    "transformers",
     "huggingface-hub",
     "python-dotenv",
     "scikit-learn",
@@ -15,8 +13,42 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-jax = ["flax", "jax", "jaxlib", "optax", "jaxtyping"]
+# Generation / g-score over APPS. Needs SynthIDTextWatermarkLogitsProcessor,
+# added to transformers in 4.46 and still present in 5.x; torch left free.
+generation = [
+    "torch",
+    "transformers>=4.46",
+    "accelerate",
+    "datasets<3.0.0",
+    "astor",
+]
+# Bayesian detector training / scoring / loading. src/bayesian_detector.py imports
+# `synthid_text`, which HARD-pins torch==2.4.0 + transformers==4.43.3 and pulls the
+# flax/jax stack. Mutually exclusive with `generation` (see [tool.uv] conflicts).
+detection = ["synthid-text"]
 reporting = ["jinja2>=3.1.0", "pandas"]
-training = ["accelerate", "datasets<3.0.0", "astor"]
 nlp = ["click", "matplotlib", "nltk", "seaborn", "tqdm"]
-dev = ["ghost-marks-in-the-machine[jax,reporting,training,nlp]"]
+# All-in-one is generation-side only; `detection` cannot coexist, sync it on its own.
+dev = ["ghost-marks-in-the-machine[generation,reporting,nlp]"]
+
+[tool.uv]
+# generation wants transformers>=4.46, detection (via synthid-text) pins ==4.43.3.
+# Declaring them conflicting lets uv lock fork the resolution instead of failing.
+# `dev` re-exports generation, so it clashes with detection for the same reason.
+conflicts = [
+    [{ extra = "generation" }, { extra = "detection" }],
+    [{ extra = "dev" }, { extra = "detection" }],
+]
+# Overrides applied to both forks:
+# - synthid-text pins transformers==4.43.3, but the trained detector pickles bundle
+#   transformers.SynthIDTextWatermarkLogitsProcessor (added in 4.46), so they won't
+#   unpickle under 4.43.3. Force >=4.46; the detection fork (torch==2.4.0) resolves a
+#   4.x with the class. Capped <5 because transformers 5.x silently disables torch
+#   at runtime under torch<2.5 (it doesn't declare the bound), and the detection fork
+#   is stuck at torch==2.4.0 via synthid-text. Both forks therefore run transformers 4.x.
+# - synthid-text pulls jax[cuda] -> jax-cuda12-plugin, Linux-only wheels that break
+#   `uv sync --extra detection` on macOS. Gate to Linux; jax runs CPU without it.
+override-dependencies = [
+    "transformers>=4.46,<5",
+    "jax-cuda12-plugin; sys_platform == 'linux'",
+]
