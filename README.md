@@ -122,14 +122,14 @@ Generates performance plots in `outputs/reports/`.
 ```
 ghost-marks-in-the-machine/
 ├── src/                    # Core library modules
-├── scripts/                # Pipeline and utility scripts
-├── tests/                  # Test files and red team testing
+│   └── red_team/           # Adversarial attack transforms (importable)
+├── scripts/                # Pipeline, runners, and demo scripts
 ├── apps/                   # Web application
 │   ├── web_app.py
 │   └── web_interface/
 ├── configs/                # Configuration files (.env.example)
 ├── outputs/                # Generated outputs (models, reports, results)
-└── NLP/                    # Isolated NLP analysis (standalone)
+└── analysis/               # Standalone n-gram / TF-IDF analysis (not wired into the pipeline)
 ```
 
 ## Data & Artifacts
@@ -143,7 +143,7 @@ in git: **[Theosdoor/ghost-marks-artifacts](https://huggingface.co/datasets/Theo
 hf download Theosdoor/ghost-marks-artifacts --repo-type dataset --local-dir .
 ```
 
-The paths mirror the repo layout, so this restores `outputs/` and the `NLP/` data files in place.
+The paths mirror the repo layout, so this restores `outputs/` and the `analysis/` data files in place.
 
 ## Reproducibility Notes
 

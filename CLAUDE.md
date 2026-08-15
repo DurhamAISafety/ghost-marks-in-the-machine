@@ -27,8 +27,8 @@ python scripts/visualize_results.py                 # plots into outputs/reports
 python apps/web_app.py                              # Flask UI on :5001 (falls back to a stub detector)
 ```
 
-**Tests are standalone scripts, not a pytest suite** — run directly, e.g.
-`python tests/run_red_team_tests.py`, `python tests/test_interactive.py`. No lint config.
+**No pytest suite** — the red-team runner and detection demos are standalone scripts, run directly:
+`python scripts/run_red_team_tests.py`, `python scripts/interactive_detection.py`. No lint config.
 
 Environment: `cp configs/.env.example .env` and set `HF_TOKEN` (gated CodeGemma access).
 
@@ -62,8 +62,8 @@ requires `CPU_Unpickler` (the single shared copy in `src/pickle_utils.py`, impor
 remaps CUDA→CPU storage and rewrites old root-level module paths to `src.*`. Load detectors through
 `WatermarkDetector` / that unpickler, never plain `pickle.load`.
 
-`NLP/` is a separate, self-contained n-gram / TF-IDF analysis on natural-language SynthID data — not
-wired into the code pipeline.
+`analysis/` is a separate, self-contained n-gram / TF-IDF analysis on natural-language SynthID data —
+not wired into the code pipeline.
 
 Large artifacts (models, results, HTML report, NLP data) are **not in git** — they're hosted on
 HF: `Theosdoor/ghost-marks-artifacts`. `outputs/{models/*.pkl,results/*.json,reports/*.html}` are
