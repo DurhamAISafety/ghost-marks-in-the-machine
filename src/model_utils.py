@@ -1,9 +1,10 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from transformers import SynthIDTextWatermarkLogitsProcessor, LogitsProcessorList
+from transformers import LogitsProcessorList
+
+from src.watermark_config import WATERMARK_KEYS, make_synthid_processor
 
 MODEL_NAME = "google/codegemma-7b-it"
-WATERMARK_KEYS = [101, 202, 303, 404, 505, 606, 707, 808, 909]
 
 def load_model_and_tokenizer():
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -38,15 +39,7 @@ def generate_code(model, tokenizer, device, prompt, ngram_len=None):
     
     logits_processor = LogitsProcessorList()
     if ngram_len is not None:
-        watermark_processor = SynthIDTextWatermarkLogitsProcessor(
-            keys=WATERMARK_KEYS,
-            ngram_len=ngram_len,
-            sampling_table_size=2**16,
-            sampling_table_seed=0,
-            context_history_size=1024,
-            device=device,
-        )
-        logits_processor.append(watermark_processor)
+        logits_processor.append(make_synthid_processor(ngram_len, device))
     
     outputs = model.generate(
         **inputs,
@@ -88,14 +81,7 @@ def compute_g_score(tokenizer, device, text, ngram_len=5, processor=None):
     
     # Optimization: Reuse processor if provided
     if processor is None:
-        processor = SynthIDTextWatermarkLogitsProcessor(
-            keys=WATERMARK_KEYS,
-            ngram_len=detect_ngram,
-            sampling_table_size=2**16,
-            sampling_table_seed=0,
-            context_history_size=1024,
-            device=device
-        )
+        processor = make_synthid_processor(detect_ngram, device)
     
     g_values = processor.compute_g_values(input_ids)
     mean_g = g_values.float().mean().item()

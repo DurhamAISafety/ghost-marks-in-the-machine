@@ -5,8 +5,6 @@ This module provides a simple interface for checking if Python code
 is watermarked using trained Bayesian detectors.
 """
 
-import pickle
-import io
 import torch
 import os
 from pathlib import Path
@@ -14,25 +12,10 @@ from transformers import AutoTokenizer
 from dotenv import load_dotenv
 from huggingface_hub import login
 
+from src.pickle_utils import CPU_Unpickler
+
 # Load environment variables
 load_dotenv()
-
-
-class CPU_Unpickler(pickle.Unpickler):
-    """Custom unpickler to load CUDA models on CPU and handle old module paths."""
-    def find_class(self, module, name):
-        # Handle CUDA to CPU mapping
-        if module == 'torch.storage' and name == '_load_from_bytes':
-            return lambda b: torch.load(io.BytesIO(b), map_location='cpu')
-        
-        # Remap old module paths to new src structure
-        # Models were pickled when modules were in root, now they're in src/
-        if module == 'bayesian_detector':
-            module = 'src.bayesian_detector'
-        elif module in ['model_utils', 'execution_utils', 'report_generator']:
-            module = f'src.{module}'
-        
-        return super().find_class(module, name)
 
 
 class WatermarkDetector:

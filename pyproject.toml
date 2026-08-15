@@ -39,20 +39,4 @@ nlp = [
     "seaborn",
     "tqdm",
 ]
-dev = [
-    "flax",
-    "jax",
-    "jaxlib",
-    "optax",
-    "jaxtyping",
-    "jinja2>=3.1.0",
-    "pandas",
-    "accelerate",
-    "datasets<3.0.0",
-    "astor",
-    "click",
-    "matplotlib",
-    "nltk",
-    "seaborn",
-    "tqdm",
-]
+dev = ["ghost-marks-in-the-machine[jax,reporting,training,nlp]"]
