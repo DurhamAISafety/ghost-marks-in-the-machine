@@ -39,7 +39,7 @@ cp configs/.env.example .env
 python scripts/pipeline.py
 ```
 
-Generates code with different watermark configurations (ngram_len: None, 2, 5, 10) and evaluates correctness.
+Generates code with different watermark configurations (ngram_len: None, 2, 5, 10) and evaluates correctness. By default it iterates the **entire APPS `interview` split** (thousands of problems); edit `NGRAM_LENS` / add a slice in `scripts/pipeline.py` to cap the run.
 
 **Output:** `outputs/results/results.json`, `outputs/reports/report.html`
 
@@ -65,6 +65,10 @@ Evaluates samples using trained detectors.
 
 **Output:** `outputs/results/bayesian_scores.json`
 
+> **Note:** `--score` (and re-training) reads `outputs/results/results.json`. That file and the
+> trained `.pkl` detectors are large and are **not** committed to git — download them first (see
+> [Data & Artifacts](#data--artifacts)).
+
 ## Detection API
 
 ### Simple Detection
@@ -83,11 +87,14 @@ print(f"Watermarked: {result['is_watermarked']}, Score: {result['score']:.4f}")
 python apps/web_app.py
 ```
 
-Open http://localhost:5000 for an interactive UI with real-time detection.
+Open http://localhost:5001 for an interactive UI with real-time detection. (Falls back to a
+pseudo-random stub detector if the real model/weights can't be loaded — the response is flagged
+with `"stub": true`.)
 
 ## Key Results
 
-Detectors tested on 67 APPS problems:
+Detectors evaluated on 67 APPS `interview` problems (the scored subset; the paper reports the
+watermarking scheme across 1000 APPS prompts):
 
 | Detector | Watermarked Mean | Unwatermarked Mean | Separation |
 |----------|------------------|-------------------|------------|
@@ -124,6 +131,27 @@ ghost-marks-in-the-machine/
 ├── outputs/                # Generated outputs (models, reports, results)
 └── NLP/                    # Isolated NLP analysis (standalone)
 ```
+
+## Data & Artifacts
+
+Trained detectors (`outputs/models/*.pkl`), generation results (`outputs/results/results.json`),
+and the NLP analysis datasets are large and are hosted externally rather than in git.
+
+```bash
+# Download models + results into the repo layout (requires the `hf` CLI: pip install huggingface-hub)
+hf download <HF_DATASET_URL> --repo-type dataset --local-dir .
+```
+
+Replace `<HF_DATASET_URL>` with the project dataset repo once published.
+
+## Reproducibility Notes
+
+- **Sample count:** `scripts/pipeline.py` runs over the full APPS `interview` split; the paper reports
+  1000 prompts and the committed detector evaluation covers 67 problems. Pin the count in the script
+  for an exact repro.
+- **Environments:** a committed `uv.lock` lives on the `theo2` branch (pending merge) for pinned installs.
+- **CI provenance check:** the GitHub Actions workflow that flags watermarked code on push/PR lives on
+  the `ai_code_workflow` branch (`.github/workflows/check_files.yml`), pending merge to `main`.
 
 ## References
 
