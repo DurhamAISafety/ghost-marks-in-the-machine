@@ -11,20 +11,19 @@ import torch
 import numpy as np
 import argparse
 import pickle
-import io
 import sys
 from pathlib import Path
 from transformers import AutoTokenizer
-from transformers import SynthIDTextWatermarkLogitsProcessor
 
 # Add parent directory to path for src imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.bayesian_detector import BayesianDetector
+from src.pickle_utils import CPU_Unpickler
+from src.watermark_config import WATERMARK_KEYS, make_synthid_processor
 
 # Configuration
 MODEL_NAME = "google/codegemma-7b-it"
-WATERMARK_KEYS = [101, 202, 303, 404, 505, 606, 707, 808, 909]
 RESULTS_FILE = "outputs/results/results.json"
 DETECTOR_SAVE_PATH = "outputs/models/bayesian_detector.pkl"
 
@@ -98,14 +97,7 @@ def train_detector_for_ngram(ngram_len, watermarked_codes, unwatermarked_codes, 
     
     # Initialize logits processor with specific ngram_len
     print(f"\n=== Initializing Logits Processor (ngram_len={ngram_len}) ===")
-    logits_processor = SynthIDTextWatermarkLogitsProcessor(
-        keys=WATERMARK_KEYS,
-        ngram_len=ngram_len,
-        sampling_table_size=2**16,
-        sampling_table_seed=0,
-        context_history_size=1024,
-        device=device
-    )
+    logits_processor = make_synthid_processor(ngram_len, device)
     
     # Train detector
     print(f"\n=== Training Bayesian Detector (ngram_len={ngram_len}) ===")
@@ -175,12 +167,6 @@ def train_all_detectors(watermarked_by_ngram, unwatermarked_codes):
     
     return detectors
 
-
-class CPU_Unpickler(pickle.Unpickler):
-    def find_class(self, module, name):
-        if module == 'torch.storage' and name == '_load_from_bytes':
-            return lambda b: torch.load(io.BytesIO(b), map_location='cpu')
-        return super().find_class(module, name)
 
 def score_samples(detectors=None):
     """Score samples from results.json using the trained detectors."""

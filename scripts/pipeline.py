@@ -7,13 +7,13 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 from huggingface_hub import login
-from transformers import SynthIDTextWatermarkLogitsProcessor
 
 # Add parent directory to path for src imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import custom modules
-from src.model_utils import load_model_and_tokenizer, generate_code, compute_g_score, WATERMARK_KEYS
+from src.model_utils import load_model_and_tokenizer, generate_code, compute_g_score
+from src.watermark_config import make_synthid_processor
 from src.execution_utils import run_code_safely
 from src.report_generator import generate_html_report
 
@@ -101,13 +101,8 @@ def main():
                 # Use cached processor
                 if n not in processor_cache:
                     # Initialize if not in cache
-                    processor_cache[n] = SynthIDTextWatermarkLogitsProcessor(
-                        keys=WATERMARK_KEYS,
-                        ngram_len=n if n is not None else 5,
-                        sampling_table_size=2**16,
-                        sampling_table_seed=0,
-                        context_history_size=1024,
-                        device=device
+                    processor_cache[n] = make_synthid_processor(
+                        n if n is not None else 5, device
                     )
                 
                 score = compute_g_score(tokenizer, device, code, ngram_len=n, processor=processor_cache[n])
@@ -139,12 +134,15 @@ def main():
         }
         all_results.append(problem_data)
         
-        # Save intermediate results
+        # Save intermediate results (alongside the final output, not in CWD)
         if (i + 1) % 5 == 0:
-             with open("results_partial.json", "w") as f:
+             os.makedirs("outputs/results", exist_ok=True)
+             with open("outputs/results/results_partial.json", "w") as f:
                 json.dump(all_results, f, indent=2)
     
     # Save to JSON
+    os.makedirs("outputs/results", exist_ok=True)
+    os.makedirs("outputs/reports", exist_ok=True)
     output_json = "outputs/results/results.json"
     with open(output_json, "w") as f:
         json.dump(all_results, f, indent=2)

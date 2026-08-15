@@ -15,12 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.bayesian_detector import BayesianDetector
 
-# CPU Unpickler for loading CUDA-trained models on CPU
-class CPU_Unpickler(pickle.Unpickler):
-    def find_class(self, module, name):
-        if module == 'torch.storage' and name == '_load_from_bytes':
-            return lambda b: torch.load(io.BytesIO(b), map_location='cpu')
-        return super().find_class(module, name)
+from src.pickle_utils import CPU_Unpickler
 
 def load_detector(ngram_len):
     path = f"outputs/models/bayesian_detector_ngram{ngram_len}.pkl"
