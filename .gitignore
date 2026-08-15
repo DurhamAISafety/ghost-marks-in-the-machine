@@ -209,3 +209,12 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Large generated artifacts — hosted on Hugging Face, not in git.
+# See README > Data & Artifacts. Restore with: hf download $HF_DATASET_REPO --repo-type dataset --local-dir .
+outputs/models/*.pkl
+outputs/results/*.json
+outputs/reports/*.html
+NLP/**/*.jsonl
+NLP/**/*.csv
+NLP/**/results_partial.json
