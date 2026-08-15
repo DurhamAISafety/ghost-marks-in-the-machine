@@ -129,7 +129,7 @@ ghost-marks-in-the-machine/
 │   └── web_interface/
 ├── configs/                # Configuration files (.env.example)
 ├── outputs/                # Generated outputs (models, reports, results)
-└── NLP/                    # Isolated NLP analysis (standalone)
+└── analysis/               # Standalone n-gram / TF-IDF analysis (not wired into the pipeline)
 ```
 
 ## Data & Artifacts
@@ -143,7 +143,7 @@ in git: **[Theosdoor/ghost-marks-artifacts](https://huggingface.co/datasets/Theo
 hf download Theosdoor/ghost-marks-artifacts --repo-type dataset --local-dir .
 ```
 
-The paths mirror the repo layout, so this restores `outputs/` and the `NLP/` data files in place.
+The paths mirror the repo layout, so this restores `outputs/` and the `analysis/` data files in place.
 
 ## Reproducibility Notes
 

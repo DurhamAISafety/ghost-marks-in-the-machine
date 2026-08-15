@@ -62,8 +62,8 @@ requires `CPU_Unpickler` (the single shared copy in `src/pickle_utils.py`, impor
 remaps CUDA→CPU storage and rewrites old root-level module paths to `src.*`. Load detectors through
 `WatermarkDetector` / that unpickler, never plain `pickle.load`.
 
-`NLP/` is a separate, self-contained n-gram / TF-IDF analysis on natural-language SynthID data — not
-wired into the code pipeline.
+`analysis/` is a separate, self-contained n-gram / TF-IDF analysis on natural-language SynthID data —
+not wired into the code pipeline.
 
 Large artifacts (models, results, HTML report, NLP data) are **not in git** — they're hosted on
 HF: `Theosdoor/ghost-marks-artifacts`. `outputs/{models/*.pkl,results/*.json,reports/*.html}` are
