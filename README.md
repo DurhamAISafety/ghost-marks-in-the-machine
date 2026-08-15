@@ -134,15 +134,16 @@ ghost-marks-in-the-machine/
 
 ## Data & Artifacts
 
-Trained detectors (`outputs/models/*.pkl`), generation results (`outputs/results/results.json`),
-and the NLP analysis datasets are large and are hosted externally rather than in git.
+Trained detectors (`outputs/models/*.pkl`), generation results (`outputs/results/*.json`, the
+HTML report), and the NLP analysis datasets are large and are hosted on Hugging Face rather than
+in git: **[Theosdoor/ghost-marks-artifacts](https://huggingface.co/datasets/Theosdoor/ghost-marks-artifacts)** (public).
 
 ```bash
 # Download models + results into the repo layout (requires the `hf` CLI: pip install huggingface-hub)
-hf download <HF_DATASET_URL> --repo-type dataset --local-dir .
+hf download Theosdoor/ghost-marks-artifacts --repo-type dataset --local-dir .
 ```
 
-Replace `<HF_DATASET_URL>` with the project dataset repo once published.
+The paths mirror the repo layout, so this restores `outputs/` and the `NLP/` data files in place.
 
 ## Reproducibility Notes
 
